@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<archive version="1.0">
+  <object class="GimoPlugin">
+    <id>org.clue.main</id>
+    <name>Clue Main Plugin</name>
+    <version>1.0</version>
+    <provider>clue</provider>
+    <module>main.js</module>
+    <symbol>clue_main_plugin_init</symbol>
+  </object>
+</archive>
