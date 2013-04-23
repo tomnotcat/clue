@@ -1,27 +1,25 @@
-Gimo = imports.gi.Gimo;
-Gtk = imports.gi.Gtk;
-Ctk = imports.gi.Ctk;
-GetText = imports.gettext;
-_ = GetText.gettext;
+const Gimo = imports.gi.Gimo;
+const Gtk = imports.gi.Gtk;
+const Ctk = imports.gi.Ctk;
+const GtkBuilder = imports.gtkbuilder;
+const GetText = imports.gettext;
+const _ = GetText.gettext;
 
 clue_main_plugin = null;
 
-Ctk.DecorateWindow = function (win) {
-    var decorator = new Ctk.WindowDecorator ();
-    decorator.attach (win);
+function _clue_main_window_destroy ()
+{
+    Gtk.main_quit ();
 }
 
 function _clue_main_start (plugin)
 {
     var builder = new Gtk.Builder ();
     builder.add_from_file (plugin.get_path () + "/main.ui", null);
+    builder.connect_signals ({on_main_window_destroy: _clue_main_window_destroy});
 
     var win = builder.get_object ("main-window");
-    Ctk.DecorateWindow (win);
-
-    win.connect ("destroy", function (){
-        Gtk.main_quit()
-    });
+    win.decorate ();
     win.show ();
 
     plugin.define_object ("main-window", win);
