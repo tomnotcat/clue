@@ -1,8 +1,9 @@
-ctk_common_headers = ctkenums.h ctktypes.h \
+ctk_common_headers = ctkenums.h ctktypes.h ctkcommondialog.h \
 	ctkdocmodel.h ctkdocview.h ctkdocument.h \
 	ctkbasedecorator.h ctkwindowdecorator.h
-ctk_common_sources = ctkenums.c ctkdocmodel.c ctkdocview.c \
-	ctkdocument.c ctkbasedecorator-x11.c ctkwindowdecorator-x11.c
+ctk_common_sources = ctkenums.c  ctkdocmodel.c ctkdocview.c \
+	ctkdocument.c ctkbasedecorator-x11.c ctkwindowdecorator-x11.c \
+	ctkcommondialog-x11.c
 
 ctk_sources = ${ctk_common_headers} ${ctk_common_sources}
 

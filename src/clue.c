@@ -182,6 +182,7 @@ int main (int argc, char *argv[])
     g_free (utf8_path);
 
     /* Pixbuf module */
+#ifdef G_OS_WIN32
     abs_path = g_build_filename (app_path, "gdk-pixbuf-2.0", "loaders.cache", NULL);
     g_setenv ("GDK_PIXBUF_MODULE_FILE", abs_path, 1);
     g_free (abs_path);
@@ -189,6 +190,7 @@ int main (int argc, char *argv[])
     abs_path = g_build_path (G_DIR_SEPARATOR_S, app_path, "gdk-pixbuf-2.0", NULL);
     g_setenv ("GDK_PIXBUF_MODULEDIR", abs_path, 1);
     g_free (abs_path);
+#endif
 
     gtk_init (&argc, &argv);
     gda_init ();
