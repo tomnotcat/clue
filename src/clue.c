@@ -65,7 +65,9 @@ static void _load_plugin (GimoContext *context,
 {
     GPtrArray *plugins = NULL;
 
-    if (gimo_context_load_plugin (context, file_path, NULL, &plugins)) {
+    if (gimo_context_load_plugin (context, file_path,
+                                  TRUE, NULL, &plugins))
+    {
         gchar *start_file;
 
         if (start) {
@@ -292,13 +294,19 @@ int main (int argc, char *argv[])
 #ifdef COMMON_PLUGINS
         _load_plugin (context, "", COMMON_PLUGINS, FALSE);
 #else
-        _load_plugin (context, app_path, "common", FALSE);
+        _load_plugin (context, app_path, "plugins/common", FALSE);
+#endif
+
+#ifdef BACKEND_PLUGINS
+        _load_plugin (context, "", BACKEND_PLUGINS, FALSE);
+#else
+        _load_plugin (context, "", "plugins/backend", FALSE);
 #endif
 
 #ifdef MAIN_PLUGINS
         _load_plugin (context, "", MAIN_PLUGINS, FALSE);
 #else
-        _load_plugin (context, app_path, "main", FALSE);
+        _load_plugin (context, app_path, "plugins/main", FALSE);
 #endif
     }
 

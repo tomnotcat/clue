@@ -1,9 +1,9 @@
-ctk_common_headers = ctkenums.h ctktypes.h ctkcommondialog.h \
-	ctkdocmodel.h ctkdocview.h ctkdocument.h \
+ctk_common_headers = ctkenums.h ctktypes.h ctkfileutils.h \
+	ctkcommondialog.h ctkdocmodel.h ctkdocview.h ctkdocument.h \
 	ctkbasedecorator.h ctkwindowdecorator.h
-ctk_common_sources = ctkenums.c  ctkdocmodel.c ctkdocview.c \
-	ctkdocument.c ctkbasedecorator-x11.c ctkwindowdecorator-x11.c \
-	ctkcommondialog-x11.c
+ctk_common_sources = ctkenums.c ctkfileutils.c ctkdocmodel.c \
+	ctkdocview.c ctkdocument.c ctkbasedecorator-x11.c \
+	ctkwindowdecorator-x11.c ctkcommondialog-x11.c
 
 ctk_sources = ${ctk_common_headers} ${ctk_common_sources}
 
@@ -24,6 +24,7 @@ bin_PROGRAMS = clue
 clue_SOURCES = clue.c
 clue_CFLAGS = -DCOMMON_PLUGINS=\"@GIMO_PLUGIN_DIR@\" \
 	-DMAIN_PLUGINS=\"@CLUE_MAIN_PLUGINS@\" \
+	-DBACKEND_PLUGINS=\"@CLUE_BACKEND_PLUGINS@\" \
 	${GLIB_CFLAGS} ${GTK_CFLAGS} ${CTK_CFLAGS} \
 	${LIBGDA_CFLAGS} ${GIMO_CFLAGS} ${OREN_CFLAGS}
 clue_LDFLAGS = ${GLIB_LIBS} ${GTK_LIBS} \
@@ -59,4 +60,5 @@ CLEANFILES += $(gir_DATA) $(typelib_DATA)
 
 endif # HAVE_INTROSPECTION
 
+SUBDIRS = . backend
 EXTRA_DIST = ctkbasedecorator-win32.c ctkwindowdecorator-win32.c

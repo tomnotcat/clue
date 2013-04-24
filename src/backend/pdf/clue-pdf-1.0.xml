@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<archive version="1.0">
+  <object class="GimoPlugin">
+    <id>org.clue.backend.pdf</id>
+    <name>Clue PDF Backend</name>
+    <version>1.0</version>
+    <provider>clue</provider>
+    <module>clue-pdf-1.0.so</module>
+    <symbol>clue_pdf_plugin</symbol>
+    <extensions class="GimoExtension">
+      <extension id="backend" name="PDF backend"
+                 point="org.clue.backend"/>
+    </extensions>
+  </object>
+</archive>

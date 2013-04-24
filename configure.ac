@@ -73,7 +73,7 @@ AC_CHECK_PROG(HAVE_PKGCONFIG, pkg-config, [ ],
 GLIB_REQUIRED_VERSION=2.32.0
 AC_SUBST(GLIB_REQUIRED_VERSION)
 
-GLIB_MODULES="glib-2.0 >= $GLIB_REQUIRED_VERSION gobject-2.0 gthread-2.0 gmodule-no-export-2.0"
+GLIB_MODULES="glib-2.0 >= $GLIB_REQUIRED_VERSION gobject-2.0 gthread-2.0 gmodule-no-export-2.0 gio-2.0"
 
 PKG_CHECK_MODULES(GLIB, $GLIB_MODULES, :,
     AC_MSG_ERROR([
@@ -212,8 +212,14 @@ AC_SUBST([CTK_LIBS])
 CLUE_MAIN_PLUGINS="\$(abs_top_srcdir)/plugins/main"
 AC_SUBST([CLUE_MAIN_PLUGINS])
 
+CLUE_BACKEND_PLUGINS="\$(abs_top_srcdir)/src/backend"
+AC_SUBST([CLUE_BACKEND_PLUGINS])
+
 AC_CONFIG_FILES([Makefile
         src/Makefile
+        src/backend/Makefile
+        src/backend/pdf/Makefile
+        src/backend/txt/Makefile
         tests/Makefile
         win32/Makefile])
 
