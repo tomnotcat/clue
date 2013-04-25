@@ -51,6 +51,8 @@ GType txt_document_get_type (void) G_GNUC_CONST;
 
 TxtDocument* txt_document_new (void);
 
+TxtDocument* clue_new_document (void);
+
 G_END_DECLS
 
 #endif /* __CTK_TXT_DOCUMENT_H__ */

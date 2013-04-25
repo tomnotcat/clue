@@ -6,10 +6,13 @@
     <version>1.0</version>
     <provider>clue</provider>
     <module>clue-pdf-1.0.so</module>
-    <symbol>clue_pdf_plugin</symbol>
     <extensions class="GimoExtension">
       <extension id="backend" name="PDF backend"
-                 point="org.clue.backend"/>
+                 point="org.clue.backend">
+        <configs class="GimoExtConfig">
+          <config name="mime-type" value="application/pdf;application/x-bzpdf;application/x-gzpdf;application/x-xzpdf;application/x-ext-pdf;"/>
+        </configs>
+      </extension>
     </extensions>
   </object>
 </archive>

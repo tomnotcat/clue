@@ -6,10 +6,13 @@
     <version>1.0</version>
     <provider>clue</provider>
     <module>clue-txt-1.0.so</module>
-    <symbol>clue_txt_plugin</symbol>
     <extensions class="GimoExtension">
       <extension id="backend" name="TXT backend"
-                 point="org.clue.backend"/>
+                 point="org.clue.backend">
+        <configs class="GimoExtConfig">
+          <config name="mime-type" value="text/plain;"/>
+        </configs>
+      </extension>
     </extensions>
   </object>
 </archive>

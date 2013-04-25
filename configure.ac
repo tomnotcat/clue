@@ -215,6 +215,9 @@ AC_SUBST([CLUE_MAIN_PLUGINS])
 CLUE_BACKEND_PLUGINS="\$(abs_top_srcdir)/src/backend"
 AC_SUBST([CLUE_BACKEND_PLUGINS])
 
+CLUE_PLUGIN_PATHS="\$(abs_top_srcdir)/src/backend/pdf/.libs:\$(abs_top_srcdir)/src/backend/txt/.libs"
+AC_SUBST([CLUE_PLUGIN_PATHS])
+
 AC_CONFIG_FILES([Makefile
         src/Makefile
         src/backend/Makefile

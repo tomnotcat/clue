@@ -23,6 +23,13 @@ struct _TxtDocumentPrivate {
     gpointer n;
 };
 
+static gboolean _txt_document_load (CtkDocument *self,
+                                    const gchar *uri,
+                                    GError **error)
+{
+    return TRUE;
+}
+
 static void txt_document_init (TxtDocument *self)
 {
     TxtDocumentPrivate *priv;
@@ -48,8 +55,11 @@ static void txt_document_finalize (GObject *gobject)
 static void txt_document_class_init (TxtDocumentClass *klass)
 {
     GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
+    CtkDocumentClass *doc_class = CTK_DOCUMENT_CLASS (klass);
 
     gobject_class->finalize = txt_document_finalize;
+
+    doc_class->load = _txt_document_load;
 
     g_type_class_add_private (gobject_class,
                               sizeof (TxtDocumentPrivate));
@@ -58,4 +68,9 @@ static void txt_document_class_init (TxtDocumentClass *klass)
 TxtDocument* txt_document_new (void)
 {
     return g_object_new (TXT_TYPE_DOCUMENT, NULL);
+}
+
+TxtDocument* clue_new_document (void)
+{
+    return txt_document_new ();
 }

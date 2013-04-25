@@ -1,0 +1,178 @@
+{
+    g_type_init
+    Memcheck:Leak
+    ...
+    fun:g_type_init_with_debug_flags
+    fun:g_type_init
+}
+
+{
+    g_type_register_static
+    Memcheck:Leak
+    ...
+    fun:g_type_register_static
+}
+
+{
+    g_type_register_fundamental
+    Memcheck:Leak
+    ...
+    fun:g_type_register_fundamental
+}
+
+{
+    g_type_class_ref
+    Memcheck:Leak
+    ...
+    fun:type_iface_vtable_base_init_Wm
+    fun:g_type_class_ref
+}
+
+{
+    standard_calloc
+    Memcheck:Leak
+    ...
+    fun:calloc
+    fun:standard_calloc
+}
+
+{
+    calloc
+    Memcheck:Leak
+    ...
+    fun:calloc
+    obj:*libglib-2.0.so*
+}
+
+{
+    g_type_set_qdata
+    Memcheck:Leak
+    fun:realloc
+    fun:standard_realloc
+    fun:g_realloc
+    fun:g_realloc_n
+    fun:g_type_set_qdata
+}
+
+{
+    g_signal_new
+    Memcheck:Leak
+    ...
+    fun:g_closure_new_simple
+    fun:g_signal_type_cclosure_new
+    fun:g_signal_new
+}
+
+{
+    g_type_add_interface_static
+    Memcheck:Leak
+    ...
+    fun:type_node_add_iface_entry_W
+    fun:type_add_interface_Wm
+    fun:g_type_add_interface_static
+}
+
+{
+    g_object_new
+    Memcheck:Leak
+    ...
+    fun:g_object_do_class_init
+    fun:g_type_class_ref
+    fun:g_type_class_ref
+    fun:g_object_newv
+    fun:g_object_new
+}
+
+{
+    g_param_spec_enum1
+    Memcheck:Leak
+    ...
+    fun:g_type_class_ref
+    fun:g_type_class_ref
+    fun:g_param_spec_enum
+}
+
+{
+    g_param_spec_enum2
+    Memcheck:Leak
+    ...
+    fun:g_type_class_ref
+    fun:g_type_class_ref
+    fun:g_type_create_instance
+    fun:g_param_spec_internal
+}
+
+{
+    g_get_any_init_do
+    Memcheck:Leak
+    ...
+    fun:g_get_any_init_do
+}
+
+{
+    PyObject_Malloc
+    Memcheck:Leak
+    fun:malloc
+    fun:PyObject_Malloc
+}
+
+{
+    PyObject_Free
+    Memcheck:Cond
+    fun:PyObject_Free
+}
+
+{
+    PyObject_Free
+    Memcheck:Addr4
+    fun:PyObject_Free
+}
+
+{
+    PyObject_Realloc
+    Memcheck:Leak
+    fun:realloc
+    fun:PyObject_Realloc
+}
+
+{
+    PyObject_Realloc
+    Memcheck:Cond
+    fun:PyObject_Realloc
+}
+
+{
+    PyObject_Realloc
+    Memcheck:Addr4
+    fun:PyObject_Realloc
+}
+
+{
+     gjs_gtype_create_gtype_wrapper
+     Memcheck:Leak
+     ...
+     fun:g_realloc
+     fun:g_realloc_n
+     fun:g_type_set_qdata
+     fun:gjs_gtype_create_gtype_wrapper
+}
+
+{
+    ev_run
+    Memcheck:Addr1
+    fun:ev_run
+}
+
+{
+    ev_async_send
+    Memcheck:Addr1
+    fun:ev_async_send
+}
+
+{
+    ev_realloc
+    Memcheck:Leak
+    fun:malloc
+    fun:realloc
+    fun:ev_realloc
+}

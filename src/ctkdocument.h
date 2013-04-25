@@ -19,6 +19,7 @@
 #define __CTK_DOCUMENT_H__
 
 #include "ctktypes.h"
+#include <gimo-types.h>
 
 G_BEGIN_DECLS
 
@@ -44,11 +45,19 @@ struct _CtkDocument {
 
 struct _CtkDocumentClass {
     GObjectClass parent_class;
+    gboolean (*load) (CtkDocument *self,
+                      const gchar *uri,
+                      GError **error);
 };
 
 GType ctk_document_get_type (void) G_GNUC_CONST;
 
-CtkDocument* ctk_document_new (void);
+gboolean ctk_document_load (CtkDocument *self,
+                            const gchar *uri,
+                            GError **error);
+
+CtkDocument* ctk_load_document (GimoContext *context,
+                                const gchar *filepath);
 
 G_END_DECLS
 

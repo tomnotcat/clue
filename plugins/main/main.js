@@ -15,7 +15,11 @@ function _clue_on_main_open (builder)
                                           "*.pdf;*.txt;",
                                           "All Files (*.*)",
                                           "*.*"]);
-    print (filename);
+    if (!filename)
+        return;
+
+    var doc = Ctk.load_document (clue_main_plugin.context, filename);
+    print (doc);
 }
 
 function _clue_on_main_save (builder)

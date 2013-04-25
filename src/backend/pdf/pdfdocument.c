@@ -23,6 +23,13 @@ struct _PdfDocumentPrivate {
     gpointer n;
 };
 
+static gboolean _pdf_document_load (CtkDocument *self,
+                                    const gchar *uri,
+                                    GError **error)
+{
+    return TRUE;
+}
+
 static void pdf_document_init (PdfDocument *self)
 {
     PdfDocumentPrivate *priv;
@@ -48,8 +55,11 @@ static void pdf_document_finalize (GObject *gobject)
 static void pdf_document_class_init (PdfDocumentClass *klass)
 {
     GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
+    CtkDocumentClass *doc_class = CTK_DOCUMENT_CLASS (klass);
 
     gobject_class->finalize = pdf_document_finalize;
+
+    doc_class->load = _pdf_document_load;
 
     g_type_class_add_private (gobject_class,
                               sizeof (PdfDocumentPrivate));
@@ -58,4 +68,9 @@ static void pdf_document_class_init (PdfDocumentClass *klass)
 PdfDocument* pdf_document_new (void)
 {
     return g_object_new (PDF_TYPE_DOCUMENT, NULL);
+}
+
+PdfDocument* clue_new_document (void)
+{
+    return pdf_document_new ();
 }

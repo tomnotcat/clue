@@ -44,3 +44,4 @@ Makefile
 /missing
 /stamp-h1
 src/clue
+tests/test-mime

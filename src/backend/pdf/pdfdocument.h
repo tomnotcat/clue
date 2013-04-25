@@ -51,6 +51,8 @@ GType pdf_document_get_type (void) G_GNUC_CONST;
 
 PdfDocument* pdf_document_new (void);
 
+PdfDocument* clue_new_document (void);
+
 G_END_DECLS
 
 #endif /* __CTK_PDF_DOCUMENT_H__ */

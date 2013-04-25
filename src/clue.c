@@ -282,6 +282,10 @@ int main (int argc, char *argv[])
 
     g_object_unref (dispatch);
 
+#ifdef PLUGIN_PATHS
+    gimo_context_add_paths (context, PLUGIN_PATHS);
+#endif
+
     if (files) {
         gchar **it = files;
 
