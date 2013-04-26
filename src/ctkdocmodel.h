@@ -50,6 +50,21 @@ GType ctk_doc_model_get_type (void) G_GNUC_CONST;
 
 CtkDocModel* ctk_doc_model_new (void);
 
+void ctk_doc_model_set_document (CtkDocModel *self,
+                                 CtkDocument *doc);
+
+CtkDocument* ctk_doc_model_get_document (CtkDocModel *self);
+
+void ctk_doc_model_set_page (CtkDocModel *self,
+                             gint page);
+
+gint ctk_doc_model_get_page (CtkDocModel *self);
+
+void ctk_doc_model_set_scale (CtkDocModel *self,
+                              gdouble scale);
+
+gdouble ctk_doc_model_get_scale (CtkDocModel *self);
+
 G_END_DECLS
 
 #endif /* __CTK_DOC_MODEL_H__ */

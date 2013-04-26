@@ -17,7 +17,16 @@
  */
 #include "ctkdocview.h"
 
-G_DEFINE_TYPE (CtkDocView, ctk_doc_view, G_TYPE_OBJECT)
+enum {
+    PROP_0,
+    PROP_HADJUSTMENT,
+    PROP_VADJUSTMENT,
+    PROP_HSCROLL_POLICY,
+    PROP_VSCROLL_POLICY
+};
+
+G_DEFINE_TYPE_WITH_CODE (CtkDocView, ctk_doc_view, GTK_TYPE_CONTAINER,
+                         G_IMPLEMENT_INTERFACE (GTK_TYPE_SCROLLABLE, NULL))
 
 struct _CtkDocViewPrivate {
     gpointer n;
@@ -35,6 +44,62 @@ static void ctk_doc_view_init (CtkDocView *self)
     priv->n = NULL;
 }
 
+static void ctk_doc_view_set_property (GObject *object,
+                                       guint prop_id,
+                                       const GValue *value,
+                                       GParamSpec *pspec)
+{
+    CtkDocView *self = CTK_DOC_VIEW (object);
+    CtkDocViewPrivate *priv = self->priv;
+
+    (void) priv;
+    switch (prop_id) {
+    case PROP_HADJUSTMENT:
+        break;
+
+    case PROP_VADJUSTMENT:
+        break;
+
+    case PROP_HSCROLL_POLICY:
+        break;
+
+    case PROP_VSCROLL_POLICY:
+        break;
+
+    default:
+        G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+        break;
+    }
+}
+
+static void ctk_doc_view_get_property (GObject *object,
+                                       guint prop_id,
+                                       GValue *value,
+                                       GParamSpec *pspec)
+{
+    CtkDocView *self = CTK_DOC_VIEW (object);
+    CtkDocViewPrivate *priv = self->priv;
+
+    (void) priv;
+    switch (prop_id) {
+    case PROP_HADJUSTMENT:
+        break;
+
+    case PROP_VADJUSTMENT:
+        break;
+
+    case PROP_HSCROLL_POLICY:
+        break;
+
+    case PROP_VSCROLL_POLICY:
+        break;
+
+    default:
+        G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+        break;
+    }
+}
+
 static void ctk_doc_view_finalize (GObject *gobject)
 {
     CtkDocView *self = CTK_DOC_VIEW (gobject);
@@ -49,7 +114,15 @@ static void ctk_doc_view_class_init (CtkDocViewClass *klass)
 {
     GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
 
+    gobject_class->set_property = ctk_doc_view_set_property;
+    gobject_class->get_property = ctk_doc_view_get_property;
     gobject_class->finalize = ctk_doc_view_finalize;
+
+    /* GtkScrollable interface */
+    g_object_class_override_property (gobject_class, PROP_HADJUSTMENT, "hadjustment");
+    g_object_class_override_property (gobject_class, PROP_VADJUSTMENT, "vadjustment");
+    g_object_class_override_property (gobject_class, PROP_HSCROLL_POLICY, "hscroll-policy");
+    g_object_class_override_property (gobject_class, PROP_VSCROLL_POLICY, "vscroll-policy");
 
     g_type_class_add_private (gobject_class,
                               sizeof (CtkDocViewPrivate));
@@ -58,4 +131,9 @@ static void ctk_doc_view_class_init (CtkDocViewClass *klass)
 CtkDocView* ctk_doc_view_new (void)
 {
     return g_object_new (CTK_TYPE_DOC_VIEW, NULL);
+}
+
+void ctk_doc_view_set_model (CtkDocView *self,
+                             CtkDocModel *model)
+{
 }

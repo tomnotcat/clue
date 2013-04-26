@@ -19,6 +19,7 @@
 #define __CTK_DOC_VIEW_H__
 
 #include "ctktypes.h"
+#include <gtk/gtk.h>
 
 G_BEGIN_DECLS
 
@@ -38,17 +39,20 @@ typedef struct _CtkDocViewPrivate CtkDocViewPrivate;
 typedef struct _CtkDocViewClass CtkDocViewClass;
 
 struct _CtkDocView {
-    GObject parent_instance;
+    GtkContainer parent_instance;
     CtkDocViewPrivate *priv;
 };
 
 struct _CtkDocViewClass {
-    GObjectClass parent_class;
+    GtkContainerClass parent_class;
 };
 
 GType ctk_doc_view_get_type (void) G_GNUC_CONST;
 
 CtkDocView* ctk_doc_view_new (void);
+
+void ctk_doc_view_set_model (CtkDocView *self,
+                             CtkDocModel *model);
 
 G_END_DECLS
 

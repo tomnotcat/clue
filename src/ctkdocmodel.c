@@ -59,3 +59,41 @@ CtkDocModel* ctk_doc_model_new (void)
 {
     return g_object_new (CTK_TYPE_DOC_MODEL, NULL);
 }
+
+void ctk_doc_model_set_document (CtkDocModel *self,
+                                 CtkDocument *doc)
+{
+}
+
+/**
+ * ctk_doc_model_get_document:
+ * @self: a #CtkDocModel
+ *
+ * Returns the #CtkDocument referenced by the model.
+ *
+ * Returns: (transfer none): a #CtkDocument
+ */
+CtkDocument* ctk_doc_model_get_document (CtkDocModel *self)
+{
+    return NULL;
+}
+
+void ctk_doc_model_set_page (CtkDocModel *self,
+                             gint page)
+{
+}
+
+gint ctk_doc_model_get_page (CtkDocModel *self)
+{
+    return 0;
+}
+
+void ctk_doc_model_set_scale (CtkDocModel *self,
+                              gdouble scale)
+{
+}
+
+gdouble ctk_doc_model_get_scale (CtkDocModel *self)
+{
+    return 0.0;
+}

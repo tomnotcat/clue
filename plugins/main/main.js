@@ -5,7 +5,7 @@ const GtkBuilder = imports.gtkbuilder;
 const GetText = imports.gettext;
 const _ = GetText.gettext;
 
-clue_main_plugin = null;
+var clue = {};
 
 function _clue_on_main_open (builder)
 {
@@ -18,8 +18,18 @@ function _clue_on_main_open (builder)
     if (!filename)
         return;
 
-    var doc = Ctk.load_document (clue_main_plugin.context, filename);
-    print (doc);
+    var doc = Ctk.load_document (clue.main.context, filename);
+    if (doc) {
+        if (!clue.main.docview)
+            clue.main.docview = new Ctk.DocView ();
+
+        if (!clue.main.docmodel) {
+            clue.main.docmodel = new Ctk.DocModel ();
+            clue.main.docview.set_model (clue.main.docmodel);
+        }
+
+        clue.main.docmodel.set_document (doc);
+    }
 }
 
 function _clue_on_main_save (builder)
@@ -60,15 +70,16 @@ function _clue_main_start (plugin)
     plugin.define_object ("main-window", win);
 
     // setup global object
-    clue_main_plugin = plugin;
-    clue_main_plugin.context = plugin.query_context ();
-    clue_main_plugin.window = win;
-    clue_main_plugin.builder = builder;
+    clue.main = {};
+    clue.main.plugin = plugin;
+    clue.main.context = plugin.query_context ();
+    clue.main.window = win;
+    clue.main.builder = builder;
 
     return true;
 }
 
-function clue_main_plugin_init (plugin)
+function clue_main_plugin (plugin)
 {
     GetText.bindtextdomain ("clue", "main/locale");
     GetText.bindtextdomain ("gtk30", "main/locale");

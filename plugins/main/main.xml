@@ -6,6 +6,6 @@
     <version>1.0</version>
     <provider>clue</provider>
     <module>main.js</module>
-    <symbol>clue_main_plugin_init</symbol>
+    <symbol>clue_main_plugin</symbol>
   </object>
 </archive>
