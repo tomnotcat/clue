@@ -19,7 +19,6 @@
 #define __CTK_DOCUMENT_H__
 
 #include "ctktypes.h"
-#include <gimo-types.h>
 
 G_BEGIN_DECLS
 
@@ -56,7 +55,7 @@ gboolean ctk_document_load (CtkDocument *self,
                             const gchar *uri,
                             GError **error);
 
-CtkDocument* ctk_load_document (GimoContext *context,
+CtkDocument* ctk_load_document (gpointer context,
                                 const gchar *filepath);
 
 G_END_DECLS

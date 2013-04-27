@@ -45,3 +45,4 @@ Makefile
 /stamp-h1
 src/clue
 tests/test-mime
+tests/test-docview

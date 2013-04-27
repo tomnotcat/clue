@@ -16,11 +16,12 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "pdfdocument.h"
+#include <mupdf.h>
 
 G_DEFINE_TYPE (PdfDocument, pdf_document, CTK_TYPE_DOCUMENT)
 
 struct _PdfDocumentPrivate {
-    gpointer n;
+    pdf_document *xref;
 };
 
 static gboolean _pdf_document_load (CtkDocument *self,
@@ -39,7 +40,7 @@ static void pdf_document_init (PdfDocument *self)
                                               PdfDocumentPrivate);
     priv = self->priv;
 
-    priv->n = NULL;
+    priv->xref = NULL;
 }
 
 static void pdf_document_finalize (GObject *gobject)
@@ -47,7 +48,7 @@ static void pdf_document_finalize (GObject *gobject)
     PdfDocument *self = PDF_DOCUMENT (gobject);
     PdfDocumentPrivate *priv = self->priv;
 
-    g_free (priv->n);
+    g_assert (NULL == priv->xref);
 
     G_OBJECT_CLASS (pdf_document_parent_class)->finalize (gobject);
 }

@@ -69,14 +69,14 @@ gboolean ctk_document_load (CtkDocument *self,
 
 /**
  * ctk_load_document:
- * @context: the plugin context
+ * @context: (type Gimo.Context): the plugin context
  * @filepath: the document file path
  *
  * Load the document from the specified path.
  *
  * Returns: (allow-none) (transfer full): a #CtkDocument
  */
-CtkDocument* ctk_load_document (GimoContext *context,
+CtkDocument* ctk_load_document (gpointer context,
                                 const gchar *filepath)
 {
     GPtrArray *backends;

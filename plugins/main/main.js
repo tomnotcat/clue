@@ -20,8 +20,12 @@ function _clue_on_main_open (builder)
 
     var doc = Ctk.load_document (clue.main.context, filename);
     if (doc) {
-        if (!clue.main.docview)
+        if (!clue.main.docview) {
+            var sw = builder.get_object ("doc-scrolledwindow");
             clue.main.docview = new Ctk.DocView ();
+            sw.add_with_viewport (clue.main.docview);
+            clue.main.docview.show ();
+        }
 
         if (!clue.main.docmodel) {
             clue.main.docmodel = new Ctk.DocModel ();
