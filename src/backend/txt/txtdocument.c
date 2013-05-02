@@ -16,6 +16,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "txtdocument.h"
+#include "txtpage.h"
 
 G_DEFINE_TYPE (TxtDocument, txt_document, CTK_TYPE_DOCUMENT)
 
@@ -24,10 +25,15 @@ struct _TxtDocumentPrivate {
 };
 
 static gboolean _txt_document_load (CtkDocument *self,
-                                    const gchar *uri,
+                                    GInputStream *stream,
                                     GError **error)
 {
     return TRUE;
+}
+
+static gint _txt_document_count_pages (CtkDocument *self)
+{
+    return 0;
 }
 
 static void txt_document_init (TxtDocument *self)
@@ -47,6 +53,8 @@ static void txt_document_finalize (GObject *gobject)
     TxtDocument *self = TXT_DOCUMENT (gobject);
     TxtDocumentPrivate *priv = self->priv;
 
+    ctk_document_close (CTK_DOCUMENT (gobject));
+
     g_free (priv->n);
 
     G_OBJECT_CLASS (txt_document_parent_class)->finalize (gobject);
@@ -60,6 +68,8 @@ static void txt_document_class_init (TxtDocumentClass *klass)
     gobject_class->finalize = txt_document_finalize;
 
     doc_class->load = _txt_document_load;
+    doc_class->count_pages = _txt_document_count_pages;
+    doc_class->get_page = txt_page_new;
 
     g_type_class_add_private (gobject_class,
                               sizeof (TxtDocumentPrivate));

@@ -35,7 +35,7 @@ static void test_docview_common (const gchar *backend,
     g_module_symbol (module, "clue_new_document", (gpointer *)&newdoc);
 
     doc = newdoc ();
-    g_assert (ctk_document_load (doc, file, NULL));
+    g_assert (ctk_document_load_from_file (doc, file, NULL));
 
     window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
 

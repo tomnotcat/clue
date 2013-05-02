@@ -19,6 +19,7 @@
 #define __CTK_DOCUMENT_H__
 
 #include "ctktypes.h"
+#include <gio/gio.h>
 
 G_BEGIN_DECLS
 
@@ -34,6 +35,12 @@ G_BEGIN_DECLS
 #define CTK_DOCUMENT_GET_CLASS(obj) \
     (G_TYPE_INSTANCE_GET_CLASS((obj), CTK_TYPE_DOCUMENT, CtkDocumentClass))
 
+#define CTK_DOCUMENT_ERROR ctk_document_error_quark ()
+
+typedef enum {
+    CTK_DOCUMENT_ERROR_INVALID
+} CtkDocumentError;
+
 typedef struct _CtkDocumentPrivate CtkDocumentPrivate;
 typedef struct _CtkDocumentClass CtkDocumentClass;
 
@@ -45,18 +52,35 @@ struct _CtkDocument {
 struct _CtkDocumentClass {
     GObjectClass parent_class;
     gboolean (*load) (CtkDocument *self,
-                      const gchar *uri,
+                      GInputStream *stream,
                       GError **error);
+    gint (*count_pages) (CtkDocument *self);
+    CtkDocPage* (*get_page) (CtkDocument *self,
+                             gint index);
 };
 
 GType ctk_document_get_type (void) G_GNUC_CONST;
 
+GQuark ctk_document_error_quark (void);
+
 gboolean ctk_document_load (CtkDocument *self,
-                            const gchar *uri,
+                            GInputStream *stream,
                             GError **error);
 
-CtkDocument* ctk_load_document (gpointer context,
-                                const gchar *filepath);
+void ctk_document_close (CtkDocument *self);
+
+gint ctk_document_count_pages (CtkDocument *self);
+
+CtkDocPage* ctk_document_get_page (CtkDocument *self,
+                                   gint index);
+
+gboolean ctk_document_load_from_file (CtkDocument *self,
+                                      const gchar *filename,
+                                      GError **error);
+
+CtkDocument* ctk_load_document_from_file (gpointer context,
+                                          const gchar *filename,
+                                          GError **error);
 
 G_END_DECLS
 

@@ -16,6 +16,13 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "ctkdocview.h"
+#include "ctkdocmodel.h"
+#include "ctkdocpage.h"
+#include "ctkdocument.h"
+#include <math.h>
+
+#define CTK_DOC_MODEL_GET_DOC(model) \
+    (model ? ctk_doc_model_get_document (model) : NULL)
 
 enum {
     PROP_0,
@@ -28,9 +35,191 @@ enum {
 G_DEFINE_TYPE_WITH_CODE (CtkDocView, ctk_doc_view, GTK_TYPE_CONTAINER,
                          G_IMPLEMENT_INTERFACE (GTK_TYPE_SCROLLABLE, NULL))
 
+typedef enum {
+    SCROLL_TO_KEEP_POSITION,
+    SCROLL_TO_PAGE_POSITION,
+    SCROLL_TO_CENTER,
+    SCROLL_TO_FIND_LOCATION
+} PendingScroll;
+
 struct _CtkDocViewPrivate {
-    gpointer n;
+    CtkDocModel *model;
+    GtkRequisition requisition;
+
+    /* Scrolling */
+    GtkAdjustment *hadjustment;
+    GtkAdjustment *vadjustment;
+    PendingScroll pending_scroll;
+
+    /* GtkScrollablePolicy needs to be checked when
+     * driving the scrollable adjustment values */
+    guint hscroll_policy : 1;
+    guint vscroll_policy : 1;
 };
+
+static void on_adjustment_value_changed (GtkAdjustment *adjustment,
+                                         CtkDocView *view)
+{
+    g_print ("))))))))))))))))))))))\n");
+}
+
+static void ctk_doc_view_set_adjustment_values (CtkDocView *self,
+                                                GtkOrientation orientation)
+{
+    CtkDocViewPrivate *priv = self->priv;
+    GtkWidget *widget = GTK_WIDGET (self);
+    GtkAdjustment *adjustment;
+    GtkAllocation allocation;
+    int req_size;
+    int alloc_size;
+    gdouble page_size;
+    gdouble value;
+    gdouble upper;
+    double factor;
+    gint new_value;
+
+    gtk_widget_get_allocation (widget, &allocation);
+
+    if (orientation == GTK_ORIENTATION_HORIZONTAL)  {
+        req_size = priv->requisition.width;
+        alloc_size = allocation.width;
+        adjustment = priv->hadjustment;
+    }
+    else {
+        req_size = priv->requisition.height;
+        alloc_size = allocation.height;
+        adjustment = priv->vadjustment;
+    }
+
+    if (!adjustment)
+        return;
+
+    factor = 1.0;
+    value = gtk_adjustment_get_value (adjustment);
+    upper = gtk_adjustment_get_upper (adjustment);
+    page_size = gtk_adjustment_get_page_size (adjustment);
+
+    switch (priv->pending_scroll) {
+    case SCROLL_TO_KEEP_POSITION:
+    case SCROLL_TO_FIND_LOCATION:
+        factor = value / upper;
+        break;
+
+    case SCROLL_TO_PAGE_POSITION:
+        break;
+
+    case SCROLL_TO_CENTER:
+        factor = (value + page_size * 0.5) / upper;
+        break;
+    }
+
+    upper = MAX (alloc_size, req_size);
+    page_size = alloc_size;
+
+    gtk_adjustment_set_page_size (adjustment, page_size);
+    gtk_adjustment_set_step_increment (adjustment, alloc_size * 0.1);
+    gtk_adjustment_set_page_increment (adjustment, alloc_size * 0.9);
+    gtk_adjustment_set_lower (adjustment, 0);
+    gtk_adjustment_set_upper (adjustment, upper);
+
+    /*
+     * We add 0.5 to the values before to average out our rounding errors.
+     */
+    switch (priv->pending_scroll) {
+    case SCROLL_TO_KEEP_POSITION:
+    case SCROLL_TO_FIND_LOCATION:
+        new_value = CLAMP (upper * factor + 0.5, 0, upper - page_size);
+        gtk_adjustment_set_value (adjustment, (int) new_value);
+        break;
+
+    case SCROLL_TO_PAGE_POSITION:
+        /* TODO
+        ev_view_scroll_to_page_position (view, orientation);
+        */
+        break;
+
+    case SCROLL_TO_CENTER:
+        new_value = CLAMP (upper * factor - page_size * 0.5 + 0.5,
+                           0, upper - page_size);
+        gtk_adjustment_set_value (adjustment, (int) new_value);
+        break;
+    }
+
+    gtk_adjustment_changed (adjustment);
+}
+
+static void ctk_doc_view_set_scroll_adjustment (CtkDocView *self,
+                                                GtkOrientation orientation,
+                                                GtkAdjustment *adjustment)
+{
+    CtkDocViewPrivate *priv = self->priv;
+    GtkAdjustment **to_set;
+    const gchar *prop_name;
+
+    if (orientation == GTK_ORIENTATION_HORIZONTAL) {
+        to_set = &priv->hadjustment;
+        prop_name = "hadjustment";
+    }
+    else {
+        to_set = &priv->vadjustment;
+        prop_name = "vadjustment";
+    }
+
+    if (adjustment && adjustment == *to_set)
+        return;
+
+    if (*to_set) {
+        g_signal_handlers_disconnect_by_func (*to_set,
+                                              on_adjustment_value_changed,
+                                              self);
+        g_object_unref (*to_set);
+    }
+
+    if (!adjustment)
+        adjustment = gtk_adjustment_new (0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
+
+    g_signal_connect (adjustment,
+                      "value-changed",
+                      G_CALLBACK (on_adjustment_value_changed),
+                      self);
+
+    *to_set = g_object_ref_sink (adjustment);
+    ctk_doc_view_set_adjustment_values (self, orientation);
+
+    g_object_notify (G_OBJECT (self), prop_name);
+}
+
+static void ctk_doc_view_document_changed (CtkDocModel *model,
+                                           GParamSpec *pspec,
+                                           CtkDocView *view)
+{
+    CtkDocViewPrivate *priv = view->priv;
+    CtkDocument *doc = CTK_DOC_MODEL_GET_DOC (model);
+    gdouble width = 0;
+    gdouble height = 0;
+
+    if (doc) {
+        CtkDocPage *page;
+        gint i, page_count;
+        gdouble page_width, page_height;
+
+        page_count = ctk_document_count_pages (doc);
+        for (i = 0; i < page_count; ++i) {
+            page = ctk_document_get_page (doc, i);
+            ctk_doc_page_get_size (page, &page_width, &page_height);
+
+            if (page_width > width)
+                width = page_width;
+
+            height += page_height;
+        }
+    }
+
+    priv->requisition.width = ceil (width);
+    priv->requisition.height = ceil (height);
+
+    gtk_widget_queue_resize (GTK_WIDGET (view));
+}
 
 static void ctk_doc_view_init (CtkDocView *self)
 {
@@ -56,7 +245,14 @@ static void ctk_doc_view_init (CtkDocView *self)
                            GDK_POINTER_MOTION_HINT_MASK |
                            GDK_ENTER_NOTIFY_MASK |
                            GDK_LEAVE_NOTIFY_MASK);
-    priv->n = NULL;
+    priv->model = NULL;
+    priv->requisition.width = 0;
+    priv->requisition.height = 0;
+    priv->hadjustment = NULL;
+    priv->vadjustment = NULL;
+    priv->pending_scroll = SCROLL_TO_KEEP_POSITION;
+    priv->hscroll_policy = 0;
+    priv->vscroll_policy = 0;
 }
 
 static void ctk_doc_view_set_property (GObject *object,
@@ -67,18 +263,27 @@ static void ctk_doc_view_set_property (GObject *object,
     CtkDocView *self = CTK_DOC_VIEW (object);
     CtkDocViewPrivate *priv = self->priv;
 
-    (void) priv;
     switch (prop_id) {
     case PROP_HADJUSTMENT:
+        ctk_doc_view_set_scroll_adjustment (self,
+                                            GTK_ORIENTATION_HORIZONTAL,
+                                            g_value_get_object (value));
         break;
 
     case PROP_VADJUSTMENT:
+        ctk_doc_view_set_scroll_adjustment (self,
+                                            GTK_ORIENTATION_VERTICAL,
+                                            g_value_get_object (value));
         break;
 
     case PROP_HSCROLL_POLICY:
+        priv->hscroll_policy = g_value_get_enum (value);
+        gtk_widget_queue_resize (GTK_WIDGET (self));
         break;
 
     case PROP_VSCROLL_POLICY:
+        priv->vscroll_policy = g_value_get_enum (value);
+        gtk_widget_queue_resize (GTK_WIDGET (self));
         break;
 
     default:
@@ -95,18 +300,21 @@ static void ctk_doc_view_get_property (GObject *object,
     CtkDocView *self = CTK_DOC_VIEW (object);
     CtkDocViewPrivate *priv = self->priv;
 
-    (void) priv;
     switch (prop_id) {
     case PROP_HADJUSTMENT:
+        g_value_set_object (value, priv->hadjustment);
         break;
 
     case PROP_VADJUSTMENT:
+        g_value_set_object (value, priv->vadjustment);
         break;
 
     case PROP_HSCROLL_POLICY:
+        g_value_set_enum (value, priv->hscroll_policy);
         break;
 
     case PROP_VSCROLL_POLICY:
+        g_value_set_enum (value, priv->vscroll_policy);
         break;
 
     default:
@@ -115,12 +323,23 @@ static void ctk_doc_view_get_property (GObject *object,
     }
 }
 
+static void ctk_doc_view_dispose (GObject *gobject)
+{
+    CtkDocView *self = CTK_DOC_VIEW (gobject);
+
+    gtk_scrollable_set_hadjustment (GTK_SCROLLABLE (self), NULL);
+    gtk_scrollable_set_vadjustment (GTK_SCROLLABLE (self), NULL);
+
+    G_OBJECT_CLASS (ctk_doc_view_parent_class)->dispose (gobject);
+}
+
 static void ctk_doc_view_finalize (GObject *gobject)
 {
     CtkDocView *self = CTK_DOC_VIEW (gobject);
     CtkDocViewPrivate *priv = self->priv;
 
-    g_free (priv->n);
+    if (priv->model)
+        g_object_unref (priv->model);
 
     G_OBJECT_CLASS (ctk_doc_view_parent_class)->finalize (gobject);
 }
@@ -128,8 +347,10 @@ static void ctk_doc_view_finalize (GObject *gobject)
 static void ctk_doc_view_size_request (GtkWidget *widget,
                                        GtkRequisition *requisition)
 {
-    requisition->width = 0;
-    requisition->height = 0;
+    CtkDocView *self = CTK_DOC_VIEW (widget);
+    CtkDocViewPrivate *priv = self->priv;
+
+    *requisition = priv->requisition;
 }
 
 static void ctk_doc_view_get_preferred_width (GtkWidget *widget,
@@ -137,7 +358,6 @@ static void ctk_doc_view_get_preferred_width (GtkWidget *widget,
                                               gint *natural)
 {
     GtkRequisition requisition;
-    g_print (">>>> get_preferred_width\n");
 
     ctk_doc_view_size_request (widget, &requisition);
 
@@ -149,7 +369,6 @@ static void ctk_doc_view_get_preferred_height (GtkWidget *widget,
                                                gint *natural)
 {
     GtkRequisition requisition;
-    g_print (">>>> get_preferred_height\n");
 
     ctk_doc_view_size_request (widget, &requisition);
 
@@ -159,9 +378,7 @@ static void ctk_doc_view_get_preferred_height (GtkWidget *widget,
 static void ctk_doc_view_size_allocate (GtkWidget *widget,
                                         GtkAllocation  *allocation)
 {
-    g_print (">>>> size_allocate: %d, %d, %d, %d\n",
-             allocation->x, allocation->y,
-             allocation->width, allocation->height);
+    CtkDocView *self = CTK_DOC_VIEW (widget);
 
     gtk_widget_set_allocation (widget, allocation);
 
@@ -172,6 +389,9 @@ static void ctk_doc_view_size_allocate (GtkWidget *widget,
                                 allocation->width,
                                 allocation->height);
     }
+
+    ctk_doc_view_set_adjustment_values (self, GTK_ORIENTATION_HORIZONTAL);
+    ctk_doc_view_set_adjustment_values (self, GTK_ORIENTATION_VERTICAL);
 }
 
 static void ctk_doc_view_realize (GtkWidget *widget)
@@ -209,7 +429,6 @@ static void ctk_doc_view_realize (GtkWidget *widget)
 static void ctk_doc_view_paint (GtkWidget *widget,
                                 cairo_t *cr)
 {
-    g_print (">>>> paint\n");
     cairo_rectangle (cr, 0, 0, 100, 100);
     cairo_fill (cr);
 }
@@ -256,7 +475,6 @@ static gboolean ctk_doc_view_draw (GtkWidget *widget,
 
 static void ctk_doc_view_destroy (GtkWidget *widget)
 {
-    g_print (">>>>: destroy\n");
     GTK_WIDGET_CLASS (ctk_doc_view_parent_class)->destroy (widget);
 }
 
@@ -267,6 +485,7 @@ static void ctk_doc_view_class_init (CtkDocViewClass *klass)
 
     gobject_class->set_property = ctk_doc_view_set_property;
     gobject_class->get_property = ctk_doc_view_get_property;
+    gobject_class->dispose = ctk_doc_view_dispose;
     gobject_class->finalize = ctk_doc_view_finalize;
 
     widget_class->realize = ctk_doc_view_realize;
@@ -294,4 +513,27 @@ CtkDocView* ctk_doc_view_new (void)
 void ctk_doc_view_set_model (CtkDocView *self,
                              CtkDocModel *model)
 {
+    CtkDocViewPrivate *priv;
+
+    g_return_if_fail (CTK_IS_DOC_VIEW (self));
+
+    priv = self->priv;
+
+    if (priv->model) {
+        g_signal_handlers_disconnect_by_func (priv->model,
+                                              ctk_doc_view_document_changed,
+                                              self);
+        g_object_unref (priv->model);
+    }
+
+    priv->model = model ? g_object_ref (model) : NULL;
+
+    ctk_doc_view_document_changed (priv->model, NULL, self);
+
+    if (priv->model) {
+        g_signal_connect (priv->model,
+                          "notify::document",
+                          G_CALLBACK (ctk_doc_view_document_changed),
+                          self);
+    }
 }

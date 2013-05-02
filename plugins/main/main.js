@@ -9,8 +9,8 @@ var clue = {};
 
 function _clue_on_main_open (builder)
 {
-    var parent = builder.get_object ("main-window");
-    var filename = Ctk.open_single_file (parent, null, null, null,
+    var win = builder.get_object ("main-window");
+    var filename = Ctk.open_single_file (win, null, null, null,
                                          ["Document Files (*.pdf;*.txt)",
                                           "*.pdf;*.txt;",
                                           "All Files (*.*)",
@@ -18,22 +18,34 @@ function _clue_on_main_open (builder)
     if (!filename)
         return;
 
-    var doc = Ctk.load_document (clue.main.context, filename);
-    if (doc) {
-        if (!clue.main.docview) {
-            var sw = builder.get_object ("doc-scrolledwindow");
-            clue.main.docview = new Ctk.DocView ();
-            sw.add_with_viewport (clue.main.docview);
-            clue.main.docview.show ();
-        }
+    var doc = Ctk.load_document_from_file (clue.main.context, filename);
+    if (!doc)
+        return;
 
-        if (!clue.main.docmodel) {
-            clue.main.docmodel = new Ctk.DocModel ();
-            clue.main.docview.set_model (clue.main.docmodel);
-        }
-
-        clue.main.docmodel.set_document (doc);
+    if (!clue.main.docview) {
+        var sw = builder.get_object ("doc-scrolledwindow");
+        clue.main.docview = new Ctk.DocView ();
+        sw.add (clue.main.docview);
+        clue.main.docview.show ();
     }
+
+    if (!clue.main.docmodel) {
+        clue.main.docmodel = new Ctk.DocModel ();
+        clue.main.docview.set_model (clue.main.docmodel);
+    }
+
+    clue.main.docmodel.set_document (doc);
+    var p = doc.get_page (0);
+    print (p.get_size ());
+
+    var split = filename.lastIndexOf ("\\");
+    if (-1 == split)
+        split = filename.lastIndexOf ("/");
+
+    if (split != -1)
+        win.set_title (filename.substring (split + 1));
+    else
+        win.set_title (filename);
 }
 
 function _clue_on_main_save (builder)
@@ -48,7 +60,8 @@ function _clue_on_main_save_as (builder)
 
 function _clue_on_main_quit (builder)
 {
-    Gtk.main_quit ();
+    var win = builder.get_object ("main-window");
+    win.destroy ();
 }
 
 function _clue_main_start (plugin)
@@ -57,7 +70,7 @@ function _clue_main_start (plugin)
 
     builder.add_from_file (plugin.get_path () + "/main.ui", null);
     builder.connect_signals ({on_main_window_destroy:
-                              function () {_clue_on_main_quit (builder);},
+                              function () { Gtk.main_quit ();},
                               on_action_open:
                               function () { _clue_on_main_open (builder);},
                               on_action_save:

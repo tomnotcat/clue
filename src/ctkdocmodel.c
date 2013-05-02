@@ -16,11 +16,17 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "ctkdocmodel.h"
+#include "ctkdocument.h"
 
 G_DEFINE_TYPE (CtkDocModel, ctk_doc_model, G_TYPE_OBJECT)
 
+enum {
+    PROP_0,
+    PROP_DOCUMENT
+};
+
 struct _CtkDocModelPrivate {
-    gpointer n;
+    CtkDocument *doc;
 };
 
 static void ctk_doc_model_init (CtkDocModel *self)
@@ -32,7 +38,45 @@ static void ctk_doc_model_init (CtkDocModel *self)
                                               CtkDocModelPrivate);
     priv = self->priv;
 
-    priv->n = NULL;
+    priv->doc = NULL;
+}
+
+static void ctk_doc_model_set_property (GObject *object,
+                                        guint prop_id,
+                                        const GValue *value,
+                                        GParamSpec *pspec)
+{
+    CtkDocModel *self = CTK_DOC_MODEL (object);
+
+    switch (prop_id) {
+    case PROP_DOCUMENT:
+        ctk_doc_model_set_document (
+            self, g_value_get_object (value));
+        break;
+
+    default:
+        G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+        break;
+    }
+}
+
+static void ctk_doc_model_get_property (GObject *object,
+                                        guint prop_id,
+                                        GValue *value,
+                                        GParamSpec *pspec)
+{
+    CtkDocModel *self = CTK_DOC_MODEL (object);
+    CtkDocModelPrivate *priv = self->priv;
+
+    switch (prop_id) {
+    case PROP_DOCUMENT:
+        g_value_set_object (value, priv->doc);
+        break;
+
+    default:
+        G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+        break;
+    }
 }
 
 static void ctk_doc_model_finalize (GObject *gobject)
@@ -40,7 +84,8 @@ static void ctk_doc_model_finalize (GObject *gobject)
     CtkDocModel *self = CTK_DOC_MODEL (gobject);
     CtkDocModelPrivate *priv = self->priv;
 
-    g_free (priv->n);
+    if (priv->doc)
+        g_object_unref (priv->doc);
 
     G_OBJECT_CLASS (ctk_doc_model_parent_class)->finalize (gobject);
 }
@@ -49,10 +94,21 @@ static void ctk_doc_model_class_init (CtkDocModelClass *klass)
 {
     GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
 
+    gobject_class->set_property = ctk_doc_model_set_property;
+    gobject_class->get_property = ctk_doc_model_get_property;
     gobject_class->finalize = ctk_doc_model_finalize;
 
     g_type_class_add_private (gobject_class,
                               sizeof (CtkDocModelPrivate));
+
+    g_object_class_install_property (
+        gobject_class, PROP_DOCUMENT,
+        g_param_spec_object ("document",
+                             "Document",
+                             "The current document",
+                             CTK_TYPE_DOCUMENT,
+                             G_PARAM_READWRITE |
+                             G_PARAM_STATIC_STRINGS));
 }
 
 CtkDocModel* ctk_doc_model_new (void)
@@ -63,6 +119,18 @@ CtkDocModel* ctk_doc_model_new (void)
 void ctk_doc_model_set_document (CtkDocModel *self,
                                  CtkDocument *doc)
 {
+    CtkDocModelPrivate *priv;
+
+    g_return_if_fail (CTK_IS_DOC_MODEL (self));
+
+    priv = self->priv;
+
+    if (priv->doc)
+        g_object_unref (priv->doc);
+
+    priv->doc = doc ? g_object_ref (doc) : NULL;
+
+    g_object_notify (G_OBJECT (self), "document");
 }
 
 /**
@@ -75,7 +143,9 @@ void ctk_doc_model_set_document (CtkDocModel *self,
  */
 CtkDocument* ctk_doc_model_get_document (CtkDocModel *self)
 {
-    return NULL;
+    g_return_val_if_fail (CTK_IS_DOC_MODEL (self), NULL);
+
+    return self->priv->doc;
 }
 
 void ctk_doc_model_set_page (CtkDocModel *self,

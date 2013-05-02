@@ -94,6 +94,15 @@ GLIB_CFLAGS=`$PKG_CONFIG --cflags $GLIB_MODULES gthread-2.0`
 GOBJECT_INTROSPECTION_CHECK([1.34.2])
 
 #
+# Checks for Cairo
+#
+PKG_CHECK_MODULES(CAIRO, [cairo], have_cairo=yes, have_cairo=no)
+
+if test "x${have_cairo}" = "xno"; then
+   AC_MSG_ERROR([cairo required but not found])
+fi
+
+#
 # Checks for GTK
 #
 PKG_CHECK_MODULES(GTK, [gtk+-3.0 >= 3.6 gmodule-2.0], have_gtk=yes, have_gtk=no)
@@ -198,7 +207,7 @@ fi
 AC_SUBST([RUN_ENVIRONMENT])
 AC_SUBST([TESTS_ENVIRONMENT])
 
-STRICT_CFLAGS="-pedantic -Wstrict-prototypes"
+STRICT_CFLAGS="-Wstrict-prototypes"
 AC_SUBST([STRICT_CFLAGS])
 
 CFLAGS="${CFLAGS} -Wall -Werror -Wno-long-long"
@@ -208,6 +217,15 @@ CTK_CFLAGS="-I\$(top_srcdir)/src"
 CTK_LIBS="-L\$(top_builddir)/src -lctk-1.0"
 AC_SUBST([CTK_CFLAGS])
 AC_SUBST([CTK_LIBS])
+
+MUPDF_DIR="/home/tomnotcat/open-source/mupdf/mupdf-1.2-source"
+MUPDF_BUILD_DIR="${MUPDF_DIR}/build/debug"
+MUPDF_CFLAGS="-I${MUPDF_DIR}/fitz -I${MUPDF_DIR}/pdf"
+MUPDF_LIBS="${MUPDF_BUILD_DIR}/libfitz.a ${MUPDF_BUILD_DIR}/libfreetype.a \
+    ${MUPDF_BUILD_DIR}/libjbig2dec.a ${MUPDF_BUILD_DIR}/libjpeg.a \
+    ${MUPDF_BUILD_DIR}/libopenjpeg.a ${MUPDF_BUILD_DIR}/libz.a"
+AC_SUBST([MUPDF_CFLAGS])
+AC_SUBST([MUPDF_LIBS])
 
 CLUE_MAIN_PLUGINS="\$(abs_top_srcdir)/plugins/main"
 AC_SUBST([CLUE_MAIN_PLUGINS])
