@@ -30,8 +30,7 @@ function _clue_on_main_open (builder)
     }
 
     clue.main.docview.set_document (doc);
-    var p = doc.get_page (0);
-    print (p.get_size ());
+    print (doc.count_pages ());
 
     var split = filename.lastIndexOf ("\\");
     if (-1 == split)

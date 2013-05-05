@@ -44,6 +44,8 @@ static void test_docview_common (const gchar *backend,
 
     view = ctk_doc_view_new ();
     ctk_doc_view_set_document (view, doc);
+    ctk_doc_view_set_document (view, NULL);
+    ctk_doc_view_set_document (view, doc);
     g_object_unref (doc);
 
     gtk_container_add (GTK_CONTAINER (window), GTK_WIDGET (view));
@@ -63,5 +65,6 @@ int main (int argc, char *argv[])
 #if 0
     test_docview_common (TEST_TXT_BACKEND, TEST_TXT_FILE);
 #endif
+
     return 0;
 }
