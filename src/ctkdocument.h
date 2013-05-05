@@ -54,6 +54,7 @@ struct _CtkDocumentClass {
     gboolean (*load) (CtkDocument *self,
                       GInputStream *stream,
                       GError **error);
+    void (*close) (CtkDocument *self);
     gint (*count_pages) (CtkDocument *self);
     CtkDocPage* (*get_page) (CtkDocument *self,
                              gint index);
@@ -73,6 +74,18 @@ gint ctk_document_count_pages (CtkDocument *self);
 
 CtkDocPage* ctk_document_get_page (CtkDocument *self,
                                    gint index);
+
+gboolean ctk_document_get_uniform_page_size (CtkDocument *self,
+                                             gdouble *width,
+                                             gdouble *height);
+
+void ctk_document_get_max_page_size (CtkDocument *self,
+                                     gdouble *width,
+                                     gdouble *height);
+
+void ctk_document_get_min_page_size (CtkDocument *self,
+                                     gdouble *width,
+                                     gdouble *height);
 
 gboolean ctk_document_load_from_file (CtkDocument *self,
                                       const gchar *filename,

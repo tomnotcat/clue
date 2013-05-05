@@ -82,13 +82,7 @@ static gboolean _pdf_document_load (CtkDocument *doc,
     fz_stream *file = NULL;
     gboolean result = FALSE;
 
-    if (priv->ctx || priv->doc) {
-        g_set_error (error,
-                     CTK_DOCUMENT_ERROR,
-                     CTK_DOCUMENT_ERROR_INVALID,
-                     "Document already loaded");
-        goto out;
-    }
+    g_assert (NULL == priv->ctx && NULL == priv->doc);
 
     ctx = fz_new_context (NULL, NULL, FZ_STORE_UNLIMITED);
     if (!ctx) {
@@ -133,6 +127,22 @@ out:
         fz_free_context (ctx);
 
     return result;
+}
+
+static void _pdf_document_close (CtkDocument *doc)
+{
+    PdfDocument *self = PDF_DOCUMENT (doc);
+    PdfDocumentPrivate *priv = self->priv;
+
+    if (priv->doc) {
+        pdf_close_document (priv->doc);
+        priv->doc = NULL;
+    }
+
+    if (priv->ctx) {
+        fz_free_context (priv->ctx);
+        priv->ctx = NULL;
+    }
 }
 
 static gint _pdf_document_count_pages (CtkDocument *doc)
@@ -181,16 +191,7 @@ static void pdf_document_get_property (GObject *object,
 
 static void pdf_document_finalize (GObject *gobject)
 {
-    PdfDocument *self = PDF_DOCUMENT (gobject);
-    PdfDocumentPrivate *priv = self->priv;
-
     ctk_document_close (CTK_DOCUMENT (gobject));
-
-    if (priv->doc)
-        pdf_close_document (priv->doc);
-
-    if (priv->ctx)
-        fz_free_context (priv->ctx);
 
     G_OBJECT_CLASS (pdf_document_parent_class)->finalize (gobject);
 }
@@ -204,6 +205,7 @@ static void pdf_document_class_init (PdfDocumentClass *klass)
     gobject_class->finalize = pdf_document_finalize;
 
     doc_class->load = _pdf_document_load;
+    doc_class->close = _pdf_document_close;
     doc_class->count_pages = _pdf_document_count_pages;
     doc_class->get_page = pdf_page_new;
 

@@ -29,12 +29,7 @@ function _clue_on_main_open (builder)
         clue.main.docview.show ();
     }
 
-    if (!clue.main.docmodel) {
-        clue.main.docmodel = new Ctk.DocModel ();
-        clue.main.docview.set_model (clue.main.docmodel);
-    }
-
-    clue.main.docmodel.set_document (doc);
+    clue.main.docview.set_document (doc);
     var p = doc.get_page (0);
     print (p.get_size ());
 

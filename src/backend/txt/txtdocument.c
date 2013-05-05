@@ -24,14 +24,22 @@ struct _TxtDocumentPrivate {
     gpointer n;
 };
 
-static gboolean _txt_document_load (CtkDocument *self,
+static gboolean _txt_document_load (CtkDocument *doc,
                                     GInputStream *stream,
                                     GError **error)
 {
     return TRUE;
 }
 
-static gint _txt_document_count_pages (CtkDocument *self)
+static void _txt_document_close (CtkDocument *doc)
+{
+    TxtDocument *self = TXT_DOCUMENT (doc);
+    TxtDocumentPrivate *priv = self->priv;
+
+    g_free (priv->n);
+}
+
+static gint _txt_document_count_pages (CtkDocument *doc)
 {
     return 0;
 }
@@ -50,12 +58,7 @@ static void txt_document_init (TxtDocument *self)
 
 static void txt_document_finalize (GObject *gobject)
 {
-    TxtDocument *self = TXT_DOCUMENT (gobject);
-    TxtDocumentPrivate *priv = self->priv;
-
     ctk_document_close (CTK_DOCUMENT (gobject));
-
-    g_free (priv->n);
 
     G_OBJECT_CLASS (txt_document_parent_class)->finalize (gobject);
 }
@@ -68,6 +71,7 @@ static void txt_document_class_init (TxtDocumentClass *klass)
     gobject_class->finalize = txt_document_finalize;
 
     doc_class->load = _txt_document_load;
+    doc_class->close = _txt_document_close;
     doc_class->count_pages = _txt_document_count_pages;
     doc_class->get_page = txt_page_new;
 

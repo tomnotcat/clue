@@ -22,10 +22,9 @@
 
 G_BEGIN_DECLS
 
-typedef struct _CtkDocModel CtkDocModel;
-typedef struct _CtkDocView CtkDocView;
 typedef struct _CtkDocument CtkDocument;
 typedef struct _CtkDocPage CtkDocPage;
+typedef struct _CtkDocView CtkDocView;
 typedef struct _CtkResourceManager CtkResourceManager;
 typedef struct _CtkBaseDecorator CtkBaseDecorator;
 typedef struct _CtkWindowDecorator CtkWindowDecorator;

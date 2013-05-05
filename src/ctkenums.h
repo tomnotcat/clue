@@ -34,8 +34,23 @@ typedef enum {
     CTK_CLOSE_MODE_MOUSE_LEAVE
 } CtkCloseMode;
 
+/**
+ * CtkSizingMode:
+ * @CTK_SIZING_BEST_FIT: best fit the window
+ * @CTK_SIZING_FIT_WIDTH: fit the window width
+ * @CTK_SIZING_FREE: fit free
+ */
+typedef enum {
+    CTK_SIZING_BEST_FIT,
+    CTK_SIZING_FIT_WIDTH,
+    CTK_SIZING_FREE
+} CtkSizingMode;
+
 GType ctk_close_mode_get_type (void) G_GNUC_CONST;
 #define CTK_TYPE_CLOSE_MODE (ctk_close_mode_get_type ())
+
+GType ctk_sizing_mode_get_type (void) G_GNUC_CONST;
+#define CTK_TYPE_SIZING_MODE (ctk_sizing_mode_get_type ())
 
 G_END_DECLS
 

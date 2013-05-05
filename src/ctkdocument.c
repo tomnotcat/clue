@@ -25,6 +25,13 @@ G_DEFINE_ABSTRACT_TYPE (CtkDocument, ctk_document, G_TYPE_OBJECT)
 
 struct _CtkDocumentPrivate {
     GPtrArray *pages;
+    gboolean uniform;
+    gdouble uniform_width;
+    gdouble uniform_height;
+    gdouble max_width;
+    gdouble max_height;
+    gdouble min_width;
+    gdouble min_height;
 };
 
 static void _doc_page_destroy (gpointer page)
@@ -45,6 +52,13 @@ static void ctk_document_init (CtkDocument *self)
     priv = self->priv;
 
     priv->pages = NULL;
+    priv->uniform = FALSE;
+    priv->uniform_width = 0;
+    priv->uniform_height = 0;
+    priv->min_width = 0;
+    priv->min_height = 0;
+    priv->max_width = 0;
+    priv->max_height = 0;
 }
 
 static void ctk_document_finalize (GObject *gobject)
@@ -81,17 +95,64 @@ gboolean ctk_document_load (CtkDocument *self,
                             GError **error)
 {
     CtkDocumentPrivate *priv;
+    CtkDocPage *page;
+    gint i, count;
+    gdouble page_width, page_height;
     gboolean result;
 
     g_return_val_if_fail (CTK_IS_DOCUMENT (self), FALSE);
 
     priv = self->priv;
 
+    if (priv->pages) {
+        g_set_error (error,
+                     CTK_DOCUMENT_ERROR,
+                     CTK_DOCUMENT_ERROR_INVALID,
+                     "Document already loaded");
+        return FALSE;
+    }
+
     result = CTK_DOCUMENT_GET_CLASS (self)->load (self, stream, error);
-    if (result && !priv->pages) {
-        gint count = ctk_document_count_pages (self);
-        priv->pages = g_ptr_array_new_full (count, _doc_page_destroy);
-        g_ptr_array_set_size (priv->pages, count);
+    if (!result)
+        return FALSE;
+
+    count = ctk_document_count_pages (self);
+    priv->pages = g_ptr_array_new_full (count, _doc_page_destroy);
+    g_ptr_array_set_size (priv->pages, count);
+
+    priv->uniform = TRUE;
+    for (i = 0; i < count; ++i) {
+        page = ctk_document_get_page (self, i);
+        ctk_doc_page_get_size (page, &page_width, &page_height);
+
+        if (i == 0) {
+            priv->uniform_width = page_width;
+            priv->uniform_height = page_height;
+            priv->max_width = priv->uniform_width;
+            priv->max_height = priv->uniform_height;
+            priv->min_width = priv->uniform_width;
+            priv->min_height = priv->uniform_height;
+        }
+        else if (priv->uniform &&
+                 (priv->uniform_width != page_width ||
+                  priv->uniform_height != page_height))
+        {
+            priv->uniform = FALSE;
+        }
+
+        if (!priv->uniform) {
+            if (page_width > priv->max_width)
+                priv->max_width = page_width;
+
+            if (page_width < priv->min_width)
+                priv->min_width = page_width;
+
+            if (page_height > priv->max_height)
+                priv->max_height = page_height;
+
+            if (page_height < priv->min_height)
+                priv->min_height = page_height;
+        }
     }
 
     return result;
@@ -109,6 +170,18 @@ void ctk_document_close (CtkDocument *self)
         g_ptr_array_unref (priv->pages);
         priv->pages = NULL;
     }
+
+    CTK_DOCUMENT_GET_CLASS (self)->close (self);
+
+    priv->uniform = FALSE;
+    priv->uniform_width = 0;
+    priv->uniform_height = 0;
+    priv->min_width = 0;
+    priv->min_height = 0;
+    priv->max_width = 0;
+    priv->max_height = 0;
+
+    g_assert (NULL == priv->pages);
 }
 
 gint ctk_document_count_pages (CtkDocument *self)
@@ -149,6 +222,63 @@ CtkDocPage* ctk_document_get_page (CtkDocument *self,
     g_ptr_array_index (priv->pages, index) = page;
 
     return page;
+}
+
+gboolean ctk_document_get_uniform_page_size (CtkDocument *self,
+                                             gdouble *width,
+                                             gdouble *height)
+{
+    CtkDocumentPrivate *priv;
+
+    g_return_val_if_fail (CTK_IS_DOCUMENT (self), FALSE);
+
+    priv = self->priv;
+
+    if (priv->uniform) {
+        if (width)
+            *width = priv->uniform_width;
+
+        if (height)
+            *height = priv->uniform_height;
+
+        return TRUE;
+    }
+
+    return FALSE;
+}
+
+void ctk_document_get_max_page_size (CtkDocument *self,
+                                     gdouble *width,
+                                     gdouble *height)
+{
+    CtkDocumentPrivate *priv;
+
+    g_return_if_fail (CTK_IS_DOCUMENT (self));
+
+    priv = self->priv;
+
+    if (width)
+        *width = priv->max_width;
+
+    if (height)
+        *height = priv->max_height;
+}
+
+void ctk_document_get_min_page_size (CtkDocument *self,
+                                     gdouble *width,
+                                     gdouble *height)
+{
+    CtkDocumentPrivate *priv;
+
+    g_return_if_fail (CTK_IS_DOCUMENT (self));
+
+    priv = self->priv;
+
+    if (width)
+        *width = priv->min_width;
+
+    if (height)
+        *height = priv->min_height;
 }
 
 gboolean ctk_document_load_from_file (CtkDocument *self,

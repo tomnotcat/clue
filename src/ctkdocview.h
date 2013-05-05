@@ -51,8 +51,45 @@ GType ctk_doc_view_get_type (void) G_GNUC_CONST;
 
 CtkDocView* ctk_doc_view_new (void);
 
-void ctk_doc_view_set_model (CtkDocView *self,
-                             CtkDocModel *model);
+void ctk_doc_view_set_document (CtkDocView *self,
+                                CtkDocument *doc);
+
+CtkDocument* ctk_doc_view_get_document (CtkDocView *self);
+
+void ctk_doc_view_set_page (CtkDocView *self,
+                            gint page);
+
+gint ctk_doc_view_get_page (CtkDocView *self);
+
+void ctk_doc_view_set_scale (CtkDocView *self,
+                             gdouble scale);
+
+gdouble ctk_doc_view_get_scale (CtkDocView *self);
+
+void ctk_doc_view_set_rotation (CtkDocView *self,
+                                gint rotation);
+
+gint ctk_doc_view_get_rotation (CtkDocView *self);
+
+void ctk_doc_view_set_sizing_mode (CtkDocView *self,
+                                   CtkSizingMode mode);
+
+CtkSizingMode ctk_doc_view_get_sizing_mode (CtkDocView *self);
+
+void ctk_doc_view_set_continuous (CtkDocView *self,
+                                  gboolean continuous);
+
+gboolean ctk_doc_view_get_continuous (CtkDocView *self);
+
+void ctk_doc_view_set_dual_page (CtkDocView *self,
+                                 gboolean dual_page);
+
+gboolean ctk_doc_view_get_dual_page (CtkDocView *self);
+
+void ctk_doc_view_set_dual_page_odd_pages_left (CtkDocView *self,
+                                                gboolean odd_left);
+
+gboolean ctk_doc_view_get_dual_page_odd_pages_left (CtkDocView *self);
 
 G_END_DECLS
 
