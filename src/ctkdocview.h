@@ -66,6 +66,14 @@ void ctk_doc_view_set_scale (CtkDocView *self,
 
 gdouble ctk_doc_view_get_scale (CtkDocView *self);
 
+gboolean ctk_doc_view_can_zoom_in (CtkDocView *self);
+
+gboolean ctk_doc_view_can_zoom_out (CtkDocView *self);
+
+void ctk_doc_view_zoom_in (CtkDocView *self);
+
+void ctk_doc_view_zoom_out (CtkDocView *self);
+
 void ctk_doc_view_set_rotation (CtkDocView *self,
                                 gint rotation);
 
