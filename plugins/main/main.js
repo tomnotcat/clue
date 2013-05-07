@@ -58,21 +58,27 @@ function _clue_on_main_quit (builder)
     win.destroy ();
 }
 
+function _clue_on_main_destroy (builder)
+{
+    builder.disconnect_signals ();
+    Gtk.main_quit ();
+}
+
 function _clue_main_start (plugin)
 {
     var builder = new Gtk.Builder ();
 
     builder.add_from_file (plugin.get_path () + "/main.ui", null);
-    builder.connect_signals ({on_main_window_destroy:
-                              function () { Gtk.main_quit ();},
-                              on_action_open:
+    builder.connect_signals ({on_action_open:
                               function () { _clue_on_main_open (builder);},
                               on_action_save:
                               function () { _clue_on_main_save (builder);},
                               on_action_save_as:
                               function () { _clue_on_main_save_as (builder);},
                               on_file_quit:
-                              function () { _clue_on_main_quit (builder);}});
+                              function () { _clue_on_main_quit (builder);},
+                              on_main_window_destroy:
+                              function () { _clue_on_main_destroy (builder);}});
 
     var win = builder.get_object ("main-window");
     win.decorate ();
