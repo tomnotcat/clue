@@ -20,6 +20,7 @@
 
 #include "ctktypes.h"
 #include <gtk/gtk.h>
+#include <oren-threadpool.h>
 
 G_BEGIN_DECLS
 
@@ -49,7 +50,7 @@ struct _CtkDocViewClass {
 
 GType ctk_doc_view_get_type (void) G_GNUC_CONST;
 
-CtkDocView* ctk_doc_view_new (void);
+CtkDocView* ctk_doc_view_new (OrenThreadPool *pool);
 
 void ctk_doc_view_set_document (CtkDocView *self,
                                 CtkDocument *doc);

@@ -17,9 +17,10 @@
  */
 #include "ctkdocview.h"
 #include "ctkdocpage.h"
+#include "ctkdocrendercache.h"
 #include "ctkdocument.h"
 
-#define CTK_HEIGHT_CACHE_KEY "ctk-height-cache"
+#define HEIGHT_CACHE_KEY "ctk-doc-view-height-cache"
 
 G_DEFINE_TYPE_WITH_CODE (CtkDocView, ctk_doc_view, GTK_TYPE_CONTAINER,
                          G_IMPLEMENT_INTERFACE (GTK_TYPE_SCROLLABLE, NULL))
@@ -29,7 +30,8 @@ enum {
     PROP_HADJUSTMENT,
     PROP_VADJUSTMENT,
     PROP_HSCROLL_POLICY,
-    PROP_VSCROLL_POLICY
+    PROP_VSCROLL_POLICY,
+    PROP_THREADPOOL
 };
 
 typedef enum {
@@ -50,6 +52,8 @@ struct _CtkDocViewPrivate {
     CtkDocument *doc;
     /* Cache the height of pages layout */
     CtkHeightCache *height_cache;
+    OrenThreadPool *thread_pool;
+    CtkDocRenderCache *render_cache;
     /* Visible pages */
     gint begin_page;
     gint end_page;
@@ -206,12 +210,12 @@ static CtkHeightCache* ctk_doc_view_get_height_cache (CtkDocView *self)
     if (!priv->doc)
         return NULL;
 
-    cache = g_object_get_data (G_OBJECT (priv->doc), CTK_HEIGHT_CACHE_KEY);
+    cache = g_object_get_data (G_OBJECT (priv->doc), HEIGHT_CACHE_KEY);
     if (!cache) {
         cache = g_new0 (CtkHeightCache, 1);
         ctk_doc_view_build_height_cache (self, cache);
         g_object_set_data_full (G_OBJECT (priv->doc),
-                                CTK_HEIGHT_CACHE_KEY,
+                                HEIGHT_CACHE_KEY,
                                 cache,
                                 (GDestroyNotify) ctk_doc_view_height_cache_free);
     }
@@ -224,11 +228,17 @@ static void ctk_doc_view_setup_caches (CtkDocView *self)
     CtkDocViewPrivate *priv = self->priv;
 
     priv->height_cache = ctk_doc_view_get_height_cache (self);
+    priv->render_cache = ctk_doc_render_cache_new (priv->doc, priv->thread_pool);
 }
 
 static void ctk_doc_view_clear_caches (CtkDocView *self)
 {
-    g_print ("clear caches\n");
+    CtkDocViewPrivate *priv = self->priv;
+
+    if (priv->render_cache) {
+        g_object_unref (priv->render_cache);
+        priv->render_cache = NULL;
+    }
 }
 
 static void ctk_doc_view_get_max_page_size (CtkDocView *self,
@@ -724,7 +734,7 @@ static void ctk_doc_view_zoom_for_size (CtkDocView *self,
         ctk_doc_view_zoom_for_size_single_page (self, width, height);
 }
 
-static void ctk_doc_view_update_visible_page (CtkDocView *self)
+static void ctk_doc_view_update_visible_pages (CtkDocView *self)
 {
     CtkDocViewPrivate *priv = self->priv;
     gint begin = priv->begin_page;
@@ -824,7 +834,15 @@ static void ctk_doc_view_update_visible_page (CtkDocView *self)
     if (begin != priv->begin_page || end != priv->end_page) {
     }
 
-    gtk_widget_queue_draw (GTK_WIDGET (self));
+    ctk_doc_render_cache_set_page_range (priv->render_cache,
+                                         priv->begin_page,
+                                         priv->end_page);
+
+    if (ctk_doc_render_cache_get_surface (priv->render_cache,
+                                          priv->cur_page))
+    {
+        gtk_widget_queue_draw (GTK_WIDGET (self));
+    }
 }
 
 static void on_adjustment_value_changed (GtkAdjustment *adjustment,
@@ -864,7 +882,7 @@ static void on_adjustment_value_changed (GtkAdjustment *adjustment,
     }
 
     if (priv->doc)
-        ctk_doc_view_update_visible_page (view);
+        ctk_doc_view_update_visible_pages (view);
 }
 
 static void ctk_doc_view_set_adjustment_values (CtkDocView *self,
@@ -1019,6 +1037,8 @@ static void ctk_doc_view_init (CtkDocView *self)
                            GDK_LEAVE_NOTIFY_MASK);
     priv->doc = NULL;
     priv->height_cache = NULL;
+    priv->thread_pool = NULL;
+    priv->render_cache = NULL;
     priv->begin_page = -1;
     priv->end_page = -1;
     priv->cur_page = -1;
@@ -1075,6 +1095,10 @@ static void ctk_doc_view_set_property (GObject *object,
         gtk_widget_queue_resize (GTK_WIDGET (self));
         break;
 
+    case PROP_THREADPOOL:
+        priv->thread_pool = g_value_dup_object (value);
+        break;
+
     default:
         G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
         break;
@@ -1126,6 +1150,12 @@ static void ctk_doc_view_finalize (GObject *gobject)
 {
     CtkDocView *self = CTK_DOC_VIEW (gobject);
     CtkDocViewPrivate *priv = self->priv;
+
+    if (priv->render_cache)
+        g_object_unref (priv->render_cache);
+
+    if (priv->thread_pool)
+        g_object_unref (priv->thread_pool);
 
     if (priv->doc)
         g_object_unref (priv->doc);
@@ -1284,7 +1314,7 @@ static void ctk_doc_view_size_allocate (GtkWidget *widget,
     ctk_doc_view_set_adjustment_values (self, GTK_ORIENTATION_VERTICAL);
 
     if (priv->doc)
-        ctk_doc_view_update_visible_page (self);
+        ctk_doc_view_update_visible_pages (self);
 
     priv->pending_scroll = SCROLL_TO_KEEP_POSITION;
     priv->pending_resize = FALSE;
@@ -1489,19 +1519,30 @@ static void ctk_doc_view_class_init (CtkDocViewClass *klass)
     container_class->remove = ctk_doc_view_remove;
     container_class->forall = ctk_doc_view_forall;
 
+    g_type_class_add_private (gobject_class,
+                              sizeof (CtkDocViewPrivate));
+
     /* GtkScrollable interface */
     g_object_class_override_property (gobject_class, PROP_HADJUSTMENT, "hadjustment");
     g_object_class_override_property (gobject_class, PROP_VADJUSTMENT, "vadjustment");
     g_object_class_override_property (gobject_class, PROP_HSCROLL_POLICY, "hscroll-policy");
     g_object_class_override_property (gobject_class, PROP_VSCROLL_POLICY, "vscroll-policy");
 
-    g_type_class_add_private (gobject_class,
-                              sizeof (CtkDocViewPrivate));
+    g_object_class_install_property (
+        gobject_class, PROP_THREADPOOL,
+        g_param_spec_object ("thread-pool",
+                             "Thread pool",
+                             "The thread pool for render page",
+                             OREN_TYPE_THREAD_POOL,
+                             G_PARAM_WRITABLE |
+                             G_PARAM_CONSTRUCT_ONLY |
+                             G_PARAM_STATIC_STRINGS));
 }
 
-CtkDocView* ctk_doc_view_new (void)
+CtkDocView* ctk_doc_view_new (OrenThreadPool *pool)
 {
-    return g_object_new (CTK_TYPE_DOC_VIEW, NULL);
+    return g_object_new (CTK_TYPE_DOC_VIEW,
+                         "thread-pool", pool, NULL);
 }
 
 void ctk_doc_view_set_document (CtkDocView *self,

@@ -1,4 +1,5 @@
 const Gimo = imports.gi.Gimo;
+const Oren = imports.gi.Oren;
 const Gtk = imports.gi.Gtk;
 const Ctk = imports.gi.Ctk;
 const GtkBuilder = imports.gtkbuilder;
@@ -22,9 +23,12 @@ function _clue_on_main_open (builder)
     if (!doc)
         return;
 
+    if (!clue.main.thread_pool)
+        clue.main.thread_pool = new Oren.ThreadPool ({thread_count: 2});
+
     if (!clue.main.docview) {
         var sw = builder.get_object ("doc-scrolledwindow");
-        clue.main.docview = new Ctk.DocView ();
+        clue.main.docview = new Ctk.DocView ({thread_pool: clue.main.thread_pool});
         sw.add (clue.main.docview);
         clue.main.docview.show ();
     }

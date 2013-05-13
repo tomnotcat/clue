@@ -25,6 +25,8 @@ G_BEGIN_DECLS
 typedef struct _CtkDocument CtkDocument;
 typedef struct _CtkDocPage CtkDocPage;
 typedef struct _CtkDocView CtkDocView;
+typedef struct _CtkDocRenderTask CtkDocRenderTask;
+typedef struct _CtkDocRenderCache CtkDocRenderCache;
 typedef struct _CtkResourceManager CtkResourceManager;
 typedef struct _CtkBaseDecorator CtkBaseDecorator;
 typedef struct _CtkWindowDecorator CtkWindowDecorator;

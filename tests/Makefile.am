@@ -3,9 +3,10 @@ all: all-am
 		$(TESTS_ENVIRONMENT) ${TEST}; \
 	fi
 
-AM_CPPFLAGS = ${STRICT_CFLAGS} ${CTK_CFLAGS} ${GLIB_CFLAGS} \
-	${GTK_CFLAGS} -DTEST_TOP_SRCDIR="\"${abs_top_srcdir}/tests/\""
-AM_LDFLAGS = ${CTK_LIBS} ${GLIB_LIBS} ${GTK_LIBS}
+AM_CPPFLAGS = ${STRICT_CFLAGS} ${CTK_CFLAGS} \
+	${GLIB_CFLAGS} ${GTK_CFLAGS} ${OREN_CFLAGS} \
+	-DTEST_TOP_SRCDIR="\"${abs_top_srcdir}/tests/\""
+AM_LDFLAGS = ${CTK_LIBS} ${GLIB_LIBS} ${GTK_LIBS} ${OREN_LIBS}
 
 check_PROGRAMS =
 check_SCRIPTS =

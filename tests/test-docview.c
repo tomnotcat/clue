@@ -42,7 +42,7 @@ static void test_docview_common (const gchar *backend,
                       G_CALLBACK (gtk_main_quit),
                       NULL);
 
-    view = ctk_doc_view_new ();
+    view = ctk_doc_view_new (NULL);
     ctk_doc_view_set_document (view, doc);
     ctk_doc_view_set_document (view, NULL);
     ctk_doc_view_set_document (view, doc);
