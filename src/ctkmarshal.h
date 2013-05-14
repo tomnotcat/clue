@@ -15,26 +15,20 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef __CTK_TYPES_H__
-#define __CTK_TYPES_H__
+#ifndef __CTK_MARSHAL_H__
+#define __CTK_MARSHAL_H__
 
-#include "ctkenums.h"
+#include "ctktypes.h"
 
 G_BEGIN_DECLS
 
-typedef struct _CtkDocument CtkDocument;
-typedef struct _CtkDocPage CtkDocPage;
-typedef struct _CtkDocView CtkDocView;
-typedef struct _CtkDocModel CtkDocModel;
-typedef struct _CtkDocRenderTask CtkDocRenderTask;
-typedef struct _CtkDocRenderCache CtkDocRenderCache;
-typedef struct _CtkResourceManager CtkResourceManager;
-typedef struct _CtkBaseDecorator CtkBaseDecorator;
-typedef struct _CtkWindowDecorator CtkWindowDecorator;
-typedef struct _CtkBubbleDecorator CtkBubbleDecorator;
-typedef struct _CtkDecoratorWidget CtkDecoratorWidget;
-typedef struct _CtkDecoratorButton CtkDecoratorButton;
+void ctk_marshal_VOID__INT_INT (GClosure *closure,
+                                GValue *return_value G_GNUC_UNUSED,
+                                guint n_param_values,
+                                const GValue *param_values,
+                                gpointer invocation_hint G_GNUC_UNUSED,
+                                gpointer marshal_data);
 
 G_END_DECLS
 
-#endif /* __CTK_TYPES_H__ */
+#endif /* __CTK_MARSHAL_H__ */

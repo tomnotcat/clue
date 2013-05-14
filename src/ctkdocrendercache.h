@@ -51,11 +51,17 @@ struct _CtkDocRenderCacheClass {
 GType ctk_doc_render_cache_get_type (void) G_GNUC_CONST;
 
 CtkDocRenderCache* ctk_doc_render_cache_new (CtkDocument *doc,
-                                             OrenThreadPool *pool);
+                                             OrenThreadPool *pool,
+                                             guint max_size);
+
+void ctk_doc_render_cache_set_max_size (CtkDocRenderCache *self,
+                                        guint max_size);
 
 void ctk_doc_render_cache_set_page_range (CtkDocRenderCache *self,
                                           gint begin_page,
-                                          gint end_page);
+                                          gint end_page,
+                                          gdouble scale,
+                                          gint rotation);
 
 cairo_surface_t* ctk_doc_render_cache_get_surface (CtkDocRenderCache *self,
                                                    gint page);

@@ -1,11 +1,11 @@
-ctk_common_headers = ctkenums.h ctktypes.h ctkfileutils.h \
-	ctkcommondialog.h ctkdocview.h ctkdocument.h ctkdocpage.h \
-	ctkbasedecorator.h ctkwindowdecorator.h ctkdocrendertask.h \
-	ctkdocrendercache.h
-ctk_common_sources = ctkenums.c ctkfileutils.c ctkdocview.c \
-	ctkdocument.c ctkdocpage.c ctkbasedecorator-x11.c \
-	ctkwindowdecorator-x11.c ctkcommondialog-x11.c ctkdocrendertask.c \
-	ctkdocrendercache.c
+ctk_common_headers = ctkenums.h ctktypes.h ctkmarshal.h \
+	ctkfileutils.h ctkcommondialog.h ctkdocview.h ctkdocument.h \
+	ctkdocmodel.h ctkdocpage.h ctkbasedecorator.h ctkwindowdecorator.h \
+	ctkdocrendertask.h ctkdocrendercache.h
+ctk_common_sources = ctkenums.c ctkmarshal.c ctkfileutils.c \
+	ctkdocview.c ctkdocument.c ctkdocmodel.c ctkdocpage.c \
+	ctkbasedecorator-x11.c ctkwindowdecorator-x11.c ctkcommondialog-x11.c \
+	ctkdocrendertask.c ctkdocrendercache.c
 
 ctk_sources = ${ctk_common_headers} ${ctk_common_sources}
 

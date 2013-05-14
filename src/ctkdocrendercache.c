@@ -25,12 +25,14 @@ G_DEFINE_TYPE (CtkDocRenderCache, ctk_doc_render_cache, G_TYPE_OBJECT)
 enum {
     PROP_0,
     PROP_DOCUMENT,
-    PROP_THREADPOOL
+    PROP_THREADPOOL,
+    PROP_MAXSIZE
 };
 
 struct _CtkDocRenderCachePrivate {
     CtkDocument *document;
     OrenThreadPool *thread_pool;
+    guint max_size;
 };
 
 static gint ctk_doc_render_cache_compare_task (gconstpointer a,
@@ -79,6 +81,10 @@ static void ctk_doc_render_cache_set_property (GObject *object,
         priv->thread_pool = g_value_dup_object (value);
         break;
 
+    case PROP_MAXSIZE:
+        ctk_doc_render_cache_set_max_size (self, g_value_get_uint (value));
+        break;
+
     default:
         G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
         break;
@@ -100,6 +106,10 @@ static void ctk_doc_render_cache_get_property (GObject *object,
 
     case PROP_THREADPOOL:
         g_value_set_object (value, priv->thread_pool);
+        break;
+
+    case PROP_MAXSIZE:
+        g_value_set_uint (value, priv->max_size);
         break;
 
     default:
@@ -159,18 +169,49 @@ static void ctk_doc_render_cache_class_init (CtkDocRenderCacheClass *klass)
                              G_PARAM_WRITABLE |
                              G_PARAM_CONSTRUCT_ONLY |
                              G_PARAM_STATIC_STRINGS));
+
+    g_object_class_install_property (
+        gobject_class, PROP_MAXSIZE,
+        g_param_spec_uint ("max-size",
+                           "Max cache size",
+                           "The max cache size",
+                           0, G_MAXUINT, 0,
+                           G_PARAM_READWRITE |
+                           G_PARAM_STATIC_STRINGS));
 }
 
 CtkDocRenderCache* ctk_doc_render_cache_new (CtkDocument *doc,
-                                             OrenThreadPool *pool)
+                                             OrenThreadPool *pool,
+                                             guint max_size)
 {
     return g_object_new (CTK_TYPE_DOC_RENDER_CACHE,
-                         "document", doc, "thread-pool", pool, NULL);
+                         "document", doc,
+                         "thread-pool", pool,
+                         "max-size", max_size, NULL);
+}
+
+void ctk_doc_render_cache_set_max_size (CtkDocRenderCache *self,
+                                        guint max_size)
+{
+    CtkDocRenderCachePrivate *priv;
+
+    g_return_if_fail (CTK_IS_DOC_RENDER_CACHE (self));
+
+    priv = self->priv;
+
+    if (max_size != priv->max_size) {
+        if (max_size < priv->max_size)
+            ctk_doc_render_cache_clear (self);
+
+        priv->max_size = max_size;
+    }
 }
 
 void ctk_doc_render_cache_set_page_range (CtkDocRenderCache *self,
                                           gint begin_page,
-                                          gint end_page)
+                                          gint end_page,
+                                          gdouble scale,
+                                          gint rotation)
 {
 }
 
