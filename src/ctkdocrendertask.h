@@ -19,6 +19,7 @@
 #define __CTK_DOC_RENDER_TASK_H__
 
 #include "ctktypes.h"
+#include <cairo.h>
 #include <oren-task.h>
 
 G_BEGIN_DECLS
@@ -49,7 +50,13 @@ struct _CtkDocRenderTaskClass {
 
 GType ctk_doc_render_task_get_type (void) G_GNUC_CONST;
 
-CtkDocRenderTask* ctk_doc_render_task_new (CtkDocPage *page);
+CtkDocRenderTask* ctk_doc_render_task_new (CtkDocPage *page,
+                                           gdouble scale,
+                                           gint rotation);
+
+CtkDocPage* ctk_doc_render_task_get_page (CtkDocRenderTask *self);
+
+cairo_surface_t* ctk_doc_render_task_get_surface (CtkDocRenderTask *self);
 
 G_END_DECLS
 

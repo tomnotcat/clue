@@ -30,6 +30,9 @@ enum {
 struct _PdfDocumentPrivate {
     fz_context *ctx;
     pdf_document *doc;
+    fz_locks_context locks;
+    GMutex mutex[FZ_LOCK_MAX];
+    GMutex ctx_mutex;
 };
 
 static int _pdf_file_read (fz_stream *stm, unsigned char *buf, int len)
@@ -71,6 +74,20 @@ static void _pdf_file_close (fz_context *ctx, void *state)
     g_object_unref (state);
 }
 
+static void _pdf_document_lock_mutex (void *user, int lock)
+{
+    GMutex *mutex = (GMutex *) user;
+
+    g_mutex_lock (&mutex[lock]);
+}
+
+static void _pdf_document_unlock_mutex (void *user, int lock)
+{
+    GMutex *mutex = (GMutex *) user;
+
+    g_mutex_unlock (&mutex[lock]);
+}
+
 static gboolean _pdf_document_load (CtkDocument *doc,
                                     GInputStream *stream,
                                     GError **error)
@@ -84,7 +101,7 @@ static gboolean _pdf_document_load (CtkDocument *doc,
 
     g_assert (NULL == priv->ctx && NULL == priv->doc);
 
-    ctx = fz_new_context (NULL, NULL, FZ_STORE_UNLIMITED);
+    ctx = fz_new_context (NULL, &priv->locks, FZ_STORE_UNLIMITED);
     if (!ctx) {
         g_set_error (error,
                      CTK_DOCUMENT_ERROR,
@@ -156,6 +173,7 @@ static gint _pdf_document_count_pages (CtkDocument *doc)
 static void pdf_document_init (PdfDocument *self)
 {
     PdfDocumentPrivate *priv;
+    gint i;
 
     self->priv = G_TYPE_INSTANCE_GET_PRIVATE (self,
                                               PDF_TYPE_DOCUMENT,
@@ -164,6 +182,14 @@ static void pdf_document_init (PdfDocument *self)
 
     priv->ctx = NULL;
     priv->doc = NULL;
+    priv->locks.user = priv->mutex;
+    priv->locks.lock = _pdf_document_lock_mutex;
+    priv->locks.unlock = _pdf_document_unlock_mutex;
+
+    for (i = 0; i < FZ_LOCK_MAX; ++i)
+        g_mutex_init (&priv->mutex[i]);
+
+    g_mutex_init (&priv->ctx_mutex);
 }
 
 static void pdf_document_get_property (GObject *object,
@@ -191,7 +217,16 @@ static void pdf_document_get_property (GObject *object,
 
 static void pdf_document_finalize (GObject *gobject)
 {
+    PdfDocument *self = PDF_DOCUMENT (gobject);
+    PdfDocumentPrivate *priv = self->priv;
+    gint i;
+
     ctk_document_close (CTK_DOCUMENT (gobject));
+
+    for (i = 0; i < FZ_LOCK_MAX; ++i)
+        g_mutex_clear (&priv->mutex[i]);
+
+    g_mutex_clear (&priv->ctx_mutex);
 
     G_OBJECT_CLASS (pdf_document_parent_class)->finalize (gobject);
 }
@@ -232,6 +267,20 @@ static void pdf_document_class_init (PdfDocumentClass *klass)
 PdfDocument* pdf_document_new (void)
 {
     return g_object_new (PDF_TYPE_DOCUMENT, NULL);
+}
+
+void pdf_document_lock (PdfDocument *self)
+{
+    g_return_if_fail (PDF_IS_DOCUMENT (self));
+
+    g_mutex_lock (&self->priv->ctx_mutex);
+}
+
+void pdf_document_unlock (PdfDocument *self)
+{
+    g_return_if_fail (PDF_IS_DOCUMENT (self));
+
+    g_mutex_unlock (&self->priv->ctx_mutex);
 }
 
 PdfDocument* clue_new_document (void)

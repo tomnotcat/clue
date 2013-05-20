@@ -16,6 +16,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "config.h"
+#include "ctkdocmodel.h"
 #include "ctkdocument.h"
 #include "ctkdocview.h"
 #include <gtk/gtk.h>
@@ -27,6 +28,7 @@ static void test_docview_common (const gchar *backend,
     GModule *module;
     GtkWidget *window;
     CtkDocument *doc;
+    CtkDocModel *model;
     CtkDocView *view;
 
     module = g_module_open (backend, G_MODULE_BIND_LAZY);
@@ -42,11 +44,13 @@ static void test_docview_common (const gchar *backend,
                       G_CALLBACK (gtk_main_quit),
                       NULL);
 
+    model = ctk_doc_model_new_with_document (doc);
     view = ctk_doc_view_new (NULL);
-    ctk_doc_view_set_document (view, doc);
-    ctk_doc_view_set_document (view, NULL);
-    ctk_doc_view_set_document (view, doc);
+    ctk_doc_view_set_model (view, model);
+    ctk_doc_view_set_model (view, NULL);
+    ctk_doc_view_set_model (view, model);
     g_object_unref (doc);
+    g_object_unref (model);
 
     gtk_container_add (GTK_CONTAINER (window), GTK_WIDGET (view));
 

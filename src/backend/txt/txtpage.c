@@ -29,7 +29,10 @@ static void _txt_page_get_size (CtkDocPage *self,
 {
 }
 
-static void _txt_page_render (CtkDocPage *self, cairo_t *cr)
+static void _txt_page_render (CtkDocPage *self,
+                              cairo_surface_t *surface,
+                              const cairo_matrix_t *ctm,
+                              const cairo_rectangle_int_t *area)
 {
 }
 

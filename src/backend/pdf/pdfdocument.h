@@ -51,6 +51,10 @@ GType pdf_document_get_type (void) G_GNUC_CONST;
 
 PdfDocument* pdf_document_new (void);
 
+void pdf_document_lock (PdfDocument *self);
+
+void pdf_document_unlock (PdfDocument *self);
+
 PdfDocument* clue_new_document (void);
 
 G_END_DECLS

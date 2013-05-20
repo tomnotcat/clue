@@ -57,6 +57,9 @@ void ctk_doc_view_set_model (CtkDocView *self,
 
 CtkDocModel* ctk_doc_view_get_model (CtkDocView *self);
 
+void ctk_doc_view_set_render_cache_size (CtkDocView *self,
+                                         guint cache_size);
+
 gboolean ctk_doc_view_can_zoom_in (CtkDocView *self);
 
 gboolean ctk_doc_view_can_zoom_out (CtkDocView *self);
@@ -64,6 +67,10 @@ gboolean ctk_doc_view_can_zoom_out (CtkDocView *self);
 void ctk_doc_view_zoom_in (CtkDocView *self);
 
 void ctk_doc_view_zoom_out (CtkDocView *self);
+
+gboolean ctk_doc_view_next_page (CtkDocView *self);
+
+gboolean ctk_doc_view_previous_page (CtkDocView *self);
 
 G_END_DECLS
 

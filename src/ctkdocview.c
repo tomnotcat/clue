@@ -22,6 +22,8 @@
 #include "ctkdocument.h"
 
 #define HEIGHT_CACHE_KEY "ctk-doc-view-height-cache"
+#define ZOOM_IN_FACTOR  1.2
+#define ZOOM_OUT_FACTOR (1.0/ZOOM_IN_FACTOR)
 
 G_DEFINE_TYPE_WITH_CODE (CtkDocView, ctk_doc_view, GTK_TYPE_CONTAINER,
                          G_IMPLEMENT_INTERFACE (GTK_TYPE_SCROLLABLE, NULL))
@@ -56,12 +58,18 @@ struct _CtkDocViewPrivate {
     CtkHeightCache *height_cache;
     OrenThreadPool *thread_pool;
     CtkDocRenderCache *render_cache;
+    guint render_cache_size;
+
     /* Visible pages */
     gint begin_page;
     gint end_page;
     gint cur_page;
     GtkRequisition requisition;
     gboolean internal_size_request;
+
+    /* Find */
+    gboolean jump_to_find_result;
+    gboolean highlight_find_results;
 
     /* Scrolling */
     GtkAdjustment *hadjustment;
@@ -225,15 +233,30 @@ static CtkHeightCache* ctk_doc_view_get_height_cache (CtkDocView *self)
     return cache;
 }
 
+static void _render_cache_task_finished (CtkDocRenderCache *cache,
+                                         gint page,
+                                         CtkDocView *view)
+{
+    gtk_widget_queue_draw (GTK_WIDGET (view));
+}
+
 static void ctk_doc_view_setup_caches (CtkDocView *self)
 {
     CtkDocViewPrivate *priv = self->priv;
 
     priv->height_cache = ctk_doc_view_get_height_cache (self);
 
-    priv->render_cache = ctk_doc_render_cache_new (priv->document,
+    priv->render_cache = ctk_doc_render_cache_new (priv->model,
                                                    priv->thread_pool,
                                                    0);
+
+    ctk_doc_render_cache_set_max_size (priv->render_cache,
+                                       priv->render_cache_size);
+
+    g_signal_connect (priv->render_cache,
+                      "task-finished",
+                      G_CALLBACK (_render_cache_task_finished),
+                      self);
 }
 
 static void ctk_doc_view_clear_caches (CtkDocView *self)
@@ -336,25 +359,23 @@ static void ctk_doc_view_get_page_y_offset (CtkDocView *self,
     *offset += temp;
 }
 
-static void ctk_doc_view_get_page_size (CtkDocView *self,
-                                        gint index,
-                                        gdouble *page_width,
-                                        gdouble *page_height,
-                                        gboolean scale)
+void ctk_get_page_size_for_scale_and_rotation (CtkDocument *document,
+                                               gint index,
+                                               gdouble scale,
+                                               gint rotation,
+                                               gdouble *page_width,
+                                               gdouble *page_height)
 {
-    CtkDocViewPrivate *priv = self->priv;
     CtkDocPage *page;
     gdouble width, height;
 
-    page = ctk_document_get_page (priv->document, index);
+    page = ctk_document_get_page (document, index);
     ctk_doc_page_get_size (page, &width, &height);
 
-    if (scale) {
-        width *= priv->scale;
-        height *= priv->scale;
-    }
+    width *= scale;
+    height *= scale;
 
-    if (priv->rotation == 0 || priv->rotation == 180) {
+    if (rotation == 0 || rotation == 180) {
         if (page_width)
             *page_width = width;
 
@@ -370,11 +391,35 @@ static void ctk_doc_view_get_page_size (CtkDocView *self,
     }
 }
 
-#define ctk_doc_view_get_view_page_size(self, index, width, height) \
-    ctk_doc_view_get_page_size (self, index, width, height, TRUE)
+static void ctk_doc_view_get_view_page_size (CtkDocView *self,
+                                             gint index,
+                                             gdouble *page_width,
+                                             gdouble *page_height)
+{
+    CtkDocViewPrivate *priv = self->priv;
 
-#define ctk_doc_view_get_doc_page_size(self, index, width, height) \
-    ctk_doc_view_get_page_size (self, index, width, height, FALSE)
+    ctk_get_page_size_for_scale_and_rotation (priv->document,
+                                              index,
+                                              priv->scale,
+                                              priv->rotation,
+                                              page_width,
+                                              page_height);
+}
+
+static void ctk_doc_view_get_doc_page_size (CtkDocView *self,
+                                            gint index,
+                                            gdouble *page_width,
+                                            gdouble *page_height)
+{
+    CtkDocViewPrivate *priv = self->priv;
+
+    ctk_get_page_size_for_scale_and_rotation (priv->document,
+                                              index,
+                                              1.0,
+                                              priv->rotation,
+                                              page_width,
+                                              page_height);
+}
 
 static void ctk_doc_view_get_page_extents (CtkDocView *self,
                                            gint page,
@@ -841,9 +886,7 @@ static void ctk_doc_view_update_visible_pages (CtkDocView *self)
 
     ctk_doc_render_cache_set_page_range (priv->render_cache,
                                          priv->begin_page,
-                                         priv->end_page,
-                                         priv->scale,
-                                         priv->rotation);
+                                         priv->end_page);
 
     if (ctk_doc_render_cache_get_surface (priv->render_cache,
                                           priv->cur_page))
@@ -1216,12 +1259,15 @@ static void ctk_doc_view_init (CtkDocView *self)
     priv->height_cache = NULL;
     priv->thread_pool = NULL;
     priv->render_cache = NULL;
+    priv->render_cache_size = 0;
     priv->begin_page = -1;
     priv->end_page = -1;
     priv->cur_page = -1;
     priv->requisition.width = 0;
     priv->requisition.height = 0;
     priv->internal_size_request = FALSE;
+    priv->jump_to_find_result = TRUE;
+    priv->highlight_find_results = FALSE;
     priv->hadjustment = NULL;
     priv->vadjustment = NULL;
     priv->hscroll_policy = 0;
@@ -1274,6 +1320,8 @@ static void ctk_doc_view_set_property (GObject *object,
 
     case PROP_THREADPOOL:
         priv->thread_pool = g_value_dup_object (value);
+        if (NULL == priv->thread_pool)
+            priv->thread_pool = oren_thread_pool_new (1);
         break;
 
     default:
@@ -1511,7 +1559,69 @@ static void ctk_doc_view_size_allocate (GtkWidget *widget,
 static gboolean ctk_doc_view_scroll_event (GtkWidget *widget,
                                            GdkEventScroll *event)
 {
-    g_print ("scroll event\n");
+    CtkDocView *self = CTK_DOC_VIEW (widget);
+    CtkDocViewPrivate *priv = self->priv;
+    guint state;
+
+    state = event->state & gtk_accelerator_get_default_mod_mask ();
+
+    if (state == GDK_CONTROL_MASK) {
+        ctk_doc_model_set_sizing_mode (priv->model, CTK_SIZING_FREE);
+        if (event->direction == GDK_SCROLL_UP ||
+            event->direction == GDK_SCROLL_LEFT)
+        {
+            if (ctk_doc_view_can_zoom_in (self)) {
+                ctk_doc_view_zoom_in (self);
+            }
+        }
+        else {
+            if (ctk_doc_view_can_zoom_out (self)) {
+                ctk_doc_view_zoom_out (self);
+            }
+        }
+
+        return TRUE;
+    }
+
+    priv->jump_to_find_result = FALSE;
+
+    /* Shift+Wheel scrolls the in the perpendicular direction */
+    if (state & GDK_SHIFT_MASK) {
+        if (event->direction == GDK_SCROLL_UP)
+            event->direction = GDK_SCROLL_LEFT;
+        else if (event->direction == GDK_SCROLL_LEFT)
+            event->direction = GDK_SCROLL_UP;
+        else if (event->direction == GDK_SCROLL_DOWN)
+            event->direction = GDK_SCROLL_RIGHT;
+        else if (event->direction == GDK_SCROLL_RIGHT)
+            event->direction = GDK_SCROLL_DOWN;
+
+        event->state &= ~GDK_SHIFT_MASK;
+        state &= ~GDK_SHIFT_MASK;
+    }
+
+    if (state == 0 &&
+        priv->sizing_mode == CTK_SIZING_BEST_FIT &&
+        !priv->continuous)
+    {
+        switch (event->direction) {
+        case GDK_SCROLL_DOWN:
+        case GDK_SCROLL_RIGHT:
+            ctk_doc_view_next_page (self);
+            break;
+
+        case GDK_SCROLL_UP:
+        case GDK_SCROLL_LEFT:
+            ctk_doc_view_previous_page (self);
+            break;
+
+        default:
+            break;
+        }
+
+        return TRUE;
+    }
+
     return FALSE;
 }
 
@@ -1626,6 +1736,39 @@ static void ctk_doc_view_draw_page (CtkDocView *self,
                                   FALSE);
 
     if (gdk_rectangle_intersect (&real_page_area, expose_area, &overlap)) {
+        cairo_surface_t *page_surface;
+        gdouble width, height;
+        gint page_width, page_height;
+
+        page_surface = ctk_doc_render_cache_get_surface (priv->render_cache, page);
+        if (NULL == page_surface) {
+            /* TODO: show loading page. */
+            return;
+        }
+
+        ctk_doc_view_get_view_page_size (self, page, &width, &height);
+        page_width = cairo_image_surface_get_width (page_surface);
+        page_height = cairo_image_surface_get_height (page_surface);
+
+        cairo_save (cr);
+        cairo_translate (cr, overlap.x, overlap.y);
+
+        if ((gint) (width + 0.5) != page_width ||
+            (gint) (height + 0.5) != page_height)
+        {
+            cairo_pattern_set_filter (cairo_get_source (cr),
+                                      CAIRO_FILTER_FAST);
+            cairo_scale (cr,
+                         (gdouble) width / page_width,
+                         (gdouble) height / page_height);
+        }
+
+        cairo_surface_set_device_offset (page_surface,
+                                         overlap.x - real_page_area.x,
+                                         overlap.y - real_page_area.y);
+        cairo_set_source_surface (cr, page_surface, 0, 0);
+        cairo_paint (cr);
+        cairo_restore (cr);
     }
 }
 
@@ -1809,20 +1952,140 @@ CtkDocModel* ctk_doc_view_get_model (CtkDocView *self)
     return self->priv->model;
 }
 
+void ctk_doc_view_set_render_cache_size (CtkDocView *self,
+                                         guint cache_size)
+{
+    CtkDocViewPrivate *priv;
+
+    g_return_if_fail (CTK_IS_DOC_VIEW (self));
+
+    priv = self->priv;
+
+    priv->render_cache_size = cache_size;
+
+    if (priv->render_cache) {
+        ctk_doc_render_cache_set_max_size (priv->render_cache,
+                                           cache_size);
+    }
+}
+
 gboolean ctk_doc_view_can_zoom_in (CtkDocView *self)
 {
-    return FALSE;
+    CtkDocViewPrivate *priv;
+
+    g_return_val_if_fail (CTK_IS_DOC_VIEW (self), FALSE);
+
+    priv = self->priv;
+
+    if (!priv->model)
+        return FALSE;
+
+    return priv->scale * ZOOM_IN_FACTOR <=
+            ctk_doc_model_get_max_scale (priv->model);
 }
 
 gboolean ctk_doc_view_can_zoom_out (CtkDocView *self)
 {
-    return FALSE;
+    CtkDocViewPrivate *priv;
+
+    g_return_val_if_fail (CTK_IS_DOC_VIEW (self), FALSE);
+
+    priv = self->priv;
+
+    if (!priv->model)
+        return FALSE;
+
+    return priv->scale * ZOOM_OUT_FACTOR >=
+            ctk_doc_model_get_min_scale (priv->model);
 }
 
 void ctk_doc_view_zoom_in (CtkDocView *self)
 {
+    CtkDocViewPrivate *priv;
+    gdouble scale;
+
+    g_return_if_fail (CTK_IS_DOC_VIEW (self));
+
+    priv = self->priv;
+
+    priv->pending_scroll = SCROLL_TO_CENTER;
+    scale = ctk_doc_model_get_scale (priv->model) * ZOOM_IN_FACTOR;
+    ctk_doc_model_set_scale (priv->model, scale);
 }
 
 void ctk_doc_view_zoom_out (CtkDocView *self)
 {
+    CtkDocViewPrivate *priv;
+    gdouble scale;
+
+    g_return_if_fail (CTK_IS_DOC_VIEW (self));
+
+    priv = self->priv;
+
+    priv->pending_scroll = SCROLL_TO_CENTER;
+    scale = ctk_doc_model_get_scale (priv->model) * ZOOM_OUT_FACTOR;
+    ctk_doc_model_set_scale (priv->model, scale);
+}
+
+gboolean ctk_doc_view_next_page (CtkDocView *self)
+{
+    CtkDocViewPrivate *priv;
+    int page, n_pages;
+
+    g_return_val_if_fail (CTK_IS_DOC_VIEW (self), FALSE);
+
+    priv = self->priv;
+
+    if (!priv->document)
+        return FALSE;
+
+    page = ctk_doc_model_get_page (priv->model);
+    n_pages = ctk_document_count_pages (priv->document);
+
+    if (priv->dual_page)
+        page = page + 2;
+    else
+        page = page + 1;
+
+    if (page < n_pages) {
+        ctk_doc_model_set_page (priv->model, page);
+        return TRUE;
+    }
+    else if (priv->dual_page && page == n_pages) {
+        ctk_doc_model_set_page (priv->model, page - 1);
+        return TRUE;
+    }
+
+    return FALSE;
+}
+
+gboolean ctk_doc_view_previous_page (CtkDocView *self)
+{
+    CtkDocViewPrivate *priv;
+    int page;
+
+    g_return_val_if_fail (CTK_IS_DOC_VIEW (self), FALSE);
+
+    priv = self->priv;
+
+    if (!priv->document)
+        return FALSE;
+
+    page = ctk_doc_model_get_page (priv->model);
+
+    if (priv->dual_page)
+        page = page - 2;
+    else
+        page = page - 1;
+
+    if (page >= 0) {
+        ctk_doc_model_set_page (priv->model, page);
+        return TRUE;
+    }
+    else if (priv->dual_page && page == -1) {
+        ctk_doc_model_set_page (priv->model, 0);
+        return TRUE;
+    }
+
+    return FALSE;
 }

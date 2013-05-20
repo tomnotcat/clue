@@ -26,15 +26,22 @@ function _clue_on_main_open (builder)
     if (!clue.main.thread_pool)
         clue.main.thread_pool = new Oren.ThreadPool ({thread_count: 2});
 
+    if (!clue.main.docmodel) {
+        clue.main.docmodel = new Ctk.DocModel ();
+        clue.main.docmodel.set_min_scale (0.1);
+        clue.main.docmodel.set_max_scale (4.0);
+    }
+
     if (!clue.main.docview) {
         var sw = builder.get_object ("doc-scrolledwindow");
         clue.main.docview = new Ctk.DocView ({thread_pool: clue.main.thread_pool});
+        clue.main.docview.set_model (clue.main.docmodel);
+        clue.main.docview.set_render_cache_size (1024 * 1024 * 30);
         sw.add (clue.main.docview);
         clue.main.docview.show ();
     }
 
-    clue.main.docview.set_document (doc);
-    print (doc.count_pages ());
+    clue.main.docmodel.set_document (doc);
 
     var split = filename.lastIndexOf ("\\");
     if (-1 == split)

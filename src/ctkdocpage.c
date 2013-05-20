@@ -160,9 +160,12 @@ void ctk_doc_page_get_size (CtkDocPage *self,
     CTK_DOC_PAGE_GET_CLASS (self)->get_size (self, width, height);
 }
 
-void ctk_doc_page_render (CtkDocPage *self, cairo_t *cr)
+void ctk_doc_page_render (CtkDocPage *self,
+                          cairo_surface_t *surface,
+                          const cairo_matrix_t *ctm,
+                          const cairo_rectangle_int_t *area)
 {
-    CTK_DOC_PAGE_GET_CLASS (self)->render (self, cr);
+    CTK_DOC_PAGE_GET_CLASS (self)->render (self, surface, ctm, area);
 }
 
 /**

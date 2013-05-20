@@ -46,11 +46,12 @@ struct _CtkDocRenderCache {
 
 struct _CtkDocRenderCacheClass {
     GObjectClass parent_class;
+    void (*task_finished) (CtkDocRenderCache *self, gint page);
 };
 
 GType ctk_doc_render_cache_get_type (void) G_GNUC_CONST;
 
-CtkDocRenderCache* ctk_doc_render_cache_new (CtkDocument *doc,
+CtkDocRenderCache* ctk_doc_render_cache_new (CtkDocModel *model,
                                              OrenThreadPool *pool,
                                              guint max_size);
 
@@ -59,9 +60,7 @@ void ctk_doc_render_cache_set_max_size (CtkDocRenderCache *self,
 
 void ctk_doc_render_cache_set_page_range (CtkDocRenderCache *self,
                                           gint begin_page,
-                                          gint end_page,
-                                          gdouble scale,
-                                          gint rotation);
+                                          gint end_page);
 
 cairo_surface_t* ctk_doc_render_cache_get_surface (CtkDocRenderCache *self,
                                                    gint page);

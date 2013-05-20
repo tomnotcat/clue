@@ -48,7 +48,10 @@ struct _CtkDocPageClass {
     void (*get_size) (CtkDocPage *self,
                       gdouble *width,
                       gdouble *height);
-    void (*render) (CtkDocPage *self, cairo_t *cr);
+    void (*render) (CtkDocPage *self,
+                    cairo_surface_t *surface,
+                    const cairo_matrix_t *ctm,
+                    const cairo_rectangle_int_t *area);
     void (*close) (CtkDocPage *self);
 };
 
@@ -58,7 +61,10 @@ void ctk_doc_page_get_size (CtkDocPage *self,
                             gdouble *width,
                             gdouble *height);
 
-void ctk_doc_page_render (CtkDocPage *self, cairo_t *cr);
+void ctk_doc_page_render (CtkDocPage *self,
+                          cairo_surface_t *surface,
+                          const cairo_matrix_t *ctm,
+                          const cairo_rectangle_int_t *area);
 
 CtkDocument* ctk_doc_page_get_document (CtkDocPage *self);
 
