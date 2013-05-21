@@ -126,20 +126,22 @@ static void ctk_doc_render_task_run (OrenTask *task)
     ctk_doc_page_get_size (priv->page, &width, &height);
 
     if (priv->rotation == 90 || priv->rotation == 270) {
-        width = height * priv->scale;
-        height = width * priv->scale;
+        gdouble w = width;
+        gdouble h = height;
+
+        width = h * priv->scale;
+        height = w * priv->scale;
     }
     else {
-        width = width * priv->scale;
-        height = height * priv->scale;
+        width *= priv->scale;
+        height *= priv->scale;
     }
-
-    cairo_matrix_init_scale (&ctm, priv->scale, priv->scale);
-    cairo_matrix_rotate (&ctm, priv->rotation * G_PI / 180.0);
 
     priv->surface = cairo_image_surface_create (CAIRO_FORMAT_ARGB32,
                                                 width + 0.5,
                                                 height + 0.5);
+
+    ctk_doc_page_get_matrix (priv->page, priv->scale, priv->rotation, &ctm);
 
     ctk_doc_page_render (priv->page, priv->surface, &ctm, NULL);
 }

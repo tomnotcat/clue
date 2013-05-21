@@ -53,14 +53,10 @@ function _clue_on_main_open (builder)
         win.set_title (filename);
 }
 
-function _clue_on_main_save (builder)
+function _clue_on_main_rotate (builder, angle)
 {
-    print ("hello save");
-}
-
-function _clue_on_main_save_as (builder)
-{
-    print ("hello save as");
+    var rotation = clue.main.docmodel.get_rotation ();
+    clue.main.docmodel.set_rotation (rotation + angle);
 }
 
 function _clue_on_main_quit (builder)
@@ -80,12 +76,12 @@ function _clue_main_start (plugin)
     var builder = new Gtk.Builder ();
 
     builder.add_from_file (plugin.get_path () + "/main.ui", null);
-    builder.connect_signals ({on_action_open:
+    builder.connect_signals ({on_open_file:
                               function () { _clue_on_main_open (builder);},
-                              on_action_save:
-                              function () { _clue_on_main_save (builder);},
-                              on_action_save_as:
-                              function () { _clue_on_main_save_as (builder);},
+                              on_rotate_left:
+                              function () { _clue_on_main_rotate (builder, -90);},
+                              on_rotate_right:
+                              function () { _clue_on_main_rotate (builder, 90);},
                               on_file_quit:
                               function () { _clue_on_main_quit (builder);},
                               on_main_window_destroy:

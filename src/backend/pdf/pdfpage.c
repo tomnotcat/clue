@@ -84,7 +84,7 @@ static void _pdf_page_get_size (CtkDocPage *page,
 static void _pdf_page_render (CtkDocPage *page,
                               cairo_surface_t *surface,
                               const cairo_matrix_t *_ctm,
-                              const cairo_rectangle_int_t *area)
+                              const cairo_rectangle_int_t *_area)
 {
     PdfPage *self = PDF_PAGE (page);
     PdfPagePrivate *priv = self->priv;
@@ -93,8 +93,9 @@ static void _pdf_page_render (CtkDocPage *page,
     fz_pixmap *pixmap;
     fz_device *idev;
     fz_display_list *list;
-    gint width, height;
     fz_matrix ctm;
+    fz_rect bounds;
+    fz_irect ibounds;
     fz_cookie cookie = { 0 };
 
 #ifdef _WIN32
@@ -118,9 +119,6 @@ static void _pdf_page_render (CtkDocPage *page,
 
     cairo_surface_flush (surface);
 
-    width = cairo_image_surface_get_width (surface);
-    height = cairo_image_surface_get_height (surface);
-
     ctm.a = _ctm->xx;
     ctm.b = _ctm->yx;
     ctm.c = _ctm->xy;
@@ -128,12 +126,21 @@ static void _pdf_page_render (CtkDocPage *page,
     ctm.e = _ctm->x0;
     ctm.f = _ctm->y0;
 
-    pixmap = fz_new_pixmap_with_data (ctx, colorspace, width, height,
-                                      cairo_image_surface_get_data (surface));
-    idev = fz_new_draw_device (ctx, pixmap);
+    pdf_bound_page (priv->doc, priv->page, &bounds);
+    fz_round_rect (&ibounds, fz_transform_rect (&bounds, &ctm));
 
+    ibounds.x1 = ibounds.x0 + cairo_image_surface_get_width (surface);
+    ibounds.y1 = ibounds.y0 + cairo_image_surface_get_height (surface);
+    fz_rect_from_irect (&bounds, &ibounds);
+
+    pixmap = fz_new_pixmap_with_bbox_and_data (
+        ctx, colorspace, &ibounds,
+        cairo_image_surface_get_data (surface));
+
+    idev = fz_new_draw_device (ctx, pixmap);
     list = _pdf_page_get_page_list (self);
-    fz_run_display_list (list, idev, &ctm, &fz_infinite_rect, &cookie);
+
+    fz_run_display_list (list, idev, &ctm, &bounds, &cookie);
 
     cairo_surface_mark_dirty (surface);
 

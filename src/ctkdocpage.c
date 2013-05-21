@@ -31,6 +31,15 @@ struct _CtkDocPagePrivate {
     gint index;
 };
 
+static void _doc_page_get_matrix (CtkDocPage *self,
+                                  gdouble scale,
+                                  gint rotation,
+                                  cairo_matrix_t *ctm)
+{
+    cairo_matrix_init_scale (ctm, scale, scale);
+    cairo_matrix_rotate (ctm, rotation * G_PI / 180.0);
+}
+
 static void _doc_page_close (CtkDocPage *self)
 {
     self->priv->document = NULL;
@@ -114,6 +123,7 @@ static void ctk_doc_page_class_init (CtkDocPageClass *klass)
     gobject_class->finalize = ctk_doc_page_finalize;
 
     klass->get_size = NULL;
+    klass->get_matrix = _doc_page_get_matrix;
     klass->render = NULL;
     klass->close = _doc_page_close;
 
@@ -158,6 +168,14 @@ void ctk_doc_page_get_size (CtkDocPage *self,
                             gdouble *height)
 {
     CTK_DOC_PAGE_GET_CLASS (self)->get_size (self, width, height);
+}
+
+void ctk_doc_page_get_matrix (CtkDocPage *self,
+                              gdouble scale,
+                              gint rotation,
+                              cairo_matrix_t *ctm)
+{
+    CTK_DOC_PAGE_GET_CLASS (self)->get_matrix (self, scale, rotation, ctm);
 }
 
 void ctk_doc_page_render (CtkDocPage *self,

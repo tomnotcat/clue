@@ -1,35 +1,49 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
   <!-- interface-requires gtk+ 3.0 -->
-  <object class="GtkAction" id="action-open">
-    <property name="label" translatable="yes">_Open</property>
-    <property name="tooltip" translatable="yes">Open Document</property>
-    <property name="stock_id">gtk-open</property>
-    <signal name="activate" handler="on_action_open" swapped="no"/>
-  </object>
-  <object class="GtkAction" id="action-save">
-    <property name="label" translatable="yes">_Save</property>
-    <property name="sensitive">False</property>
-    <signal name="activate" handler="on_action_save" swapped="no"/>
-  </object>
-  <object class="GtkAction" id="action-save-as">
-    <property name="label" translatable="yes">Save _As</property>
-    <property name="sensitive">False</property>
-    <signal name="activate" handler="on_action_save_as" swapped="no"/>
+  <object class="GtkAccelGroup" id="accelgroup"/>
+  <object class="GtkActionGroup" id="actiongroup">
+    <property name="accel_group">accelgroup</property>
+    <child>
+      <object class="GtkAction" id="open">
+        <property name="label" translatable="yes">_Open</property>
+        <property name="tooltip" translatable="yes">Open Document</property>
+        <property name="stock_id">gtk-open</property>
+        <signal name="activate" handler="on_open_file" swapped="no"/>
+      </object>
+      <accelerator key="o" modifiers="GDK_CONTROL_MASK"/>
+    </child>
+    <child>
+      <object class="GtkAction" id="rotate-left">
+        <property name="label" translatable="yes">Rotate Left</property>
+        <signal name="activate" handler="on_rotate_left" swapped="no"/>
+      </object>
+      <accelerator key="Left" modifiers="GDK_CONTROL_MASK"/>
+    </child>
+    <child>
+      <object class="GtkAction" id="rotate-right">
+        <property name="label" translatable="yes">Rotate Right</property>
+        <signal name="activate" handler="on_rotate_right" swapped="no"/>
+      </object>
+      <accelerator key="Right" modifiers="GDK_CONTROL_MASK"/>
+    </child>
   </object>
   <object class="GtkWindow" id="main-window">
     <property name="width_request">500</property>
     <property name="height_request">400</property>
     <property name="can_focus">False</property>
     <property name="window_position">center</property>
+    <accel-groups>
+      <group name="accelgroup"/>
+    </accel-groups>
     <signal name="destroy" handler="on_main_window_destroy" swapped="no"/>
     <child>
-      <object class="GtkBox" id="box1">
+      <object class="GtkBox" id="main-box">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
         <property name="orientation">vertical</property>
         <child>
-          <object class="GtkMenuBar" id="menubar1">
+          <object class="GtkMenuBar" id="menubar">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <child>
@@ -44,30 +58,9 @@
                     <property name="can_focus">False</property>
                     <child>
                       <object class="GtkImageMenuItem" id="menu-file-open">
-                        <property name="related_action">action-open</property>
+                        <property name="related_action">open</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="use_underline">True</property>
-                        <property name="use_stock">True</property>
-                        <accelerator key="o" signal="activate" modifiers="GDK_CONTROL_MASK"/>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkImageMenuItem" id="menu-file-save">
-                        <property name="related_action">action-save</property>
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="use_underline">True</property>
-                        <property name="use_stock">True</property>
-                        <accelerator key="s" signal="activate" modifiers="GDK_CONTROL_MASK"/>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkImageMenuItem" id="menu-file-save-as">
-                        <property name="related_action">action-save-as</property>
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
                       </object>
                     </child>
@@ -152,6 +145,42 @@
                 <property name="can_focus">False</property>
                 <property name="label" translatable="yes">_View</property>
                 <property name="use_underline">True</property>
+                <child type="submenu">
+                  <object class="GtkMenu" id="menu4">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <child>
+                      <object class="GtkMenuItem" id="menuitem5">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="label" translatable="yes">Rotate</property>
+                        <property name="use_underline">True</property>
+                        <child type="submenu">
+                          <object class="GtkMenu" id="menu5">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <child>
+                              <object class="GtkImageMenuItem" id="imagemenuitem1">
+                                <property name="related_action">rotate-left</property>
+                                <property name="visible">True</property>
+                                <property name="can_focus">False</property>
+                                <property name="use_stock">True</property>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkImageMenuItem" id="imagemenuitem2">
+                                <property name="related_action">rotate-right</property>
+                                <property name="visible">True</property>
+                                <property name="can_focus">False</property>
+                                <property name="use_stock">True</property>
+                              </object>
+                            </child>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
+                  </object>
+                </child>
               </object>
             </child>
             <child>
@@ -185,14 +214,14 @@
           </packing>
         </child>
         <child>
-          <object class="GtkToolbar" id="toolbar1">
+          <object class="GtkToolbar" id="toolbar">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="toolbar_style">icons</property>
             <property name="icon_size">4</property>
             <child>
               <object class="GtkToolButton" id="toolbutton1">
-                <property name="related_action">action-open</property>
+                <property name="related_action">open</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="use_underline">True</property>
@@ -210,7 +239,7 @@
           </packing>
         </child>
         <child>
-          <object class="GtkBox" id="box2">
+          <object class="GtkBox" id="middle-box">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <child>
@@ -280,7 +309,7 @@
           </packing>
         </child>
         <child>
-          <object class="GtkStatusbar" id="statusbar1">
+          <object class="GtkStatusbar" id="statusbar">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="orientation">vertical</property>

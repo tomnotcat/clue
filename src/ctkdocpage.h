@@ -48,6 +48,10 @@ struct _CtkDocPageClass {
     void (*get_size) (CtkDocPage *self,
                       gdouble *width,
                       gdouble *height);
+    void (*get_matrix) (CtkDocPage *self,
+                        gdouble scale,
+                        gint rotation,
+                        cairo_matrix_t *ctm);
     void (*render) (CtkDocPage *self,
                     cairo_surface_t *surface,
                     const cairo_matrix_t *ctm,
@@ -60,6 +64,11 @@ GType ctk_doc_page_get_type (void) G_GNUC_CONST;
 void ctk_doc_page_get_size (CtkDocPage *self,
                             gdouble *width,
                             gdouble *height);
+
+void ctk_doc_page_get_matrix (CtkDocPage *self,
+                              gdouble scale,
+                              gint rotation,
+                              cairo_matrix_t *ctm);
 
 void ctk_doc_page_render (CtkDocPage *self,
                           cairo_surface_t *surface,
