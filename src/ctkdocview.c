@@ -363,38 +363,39 @@ void ctk_get_page_size_for_scale_and_rotation (CtkDocument *document,
                                                gint index,
                                                gdouble scale,
                                                gint rotation,
-                                               gdouble *page_width,
-                                               gdouble *page_height)
+                                               gint *page_width,
+                                               gint *page_height)
 {
     CtkDocPage *page;
     gdouble width, height;
 
     page = ctk_document_get_page (document, index);
-    ctk_doc_page_get_size (page, &width, &height);
+    g_assert (page);
 
+    ctk_doc_page_get_size (page, &width, &height);
     width *= scale;
     height *= scale;
 
     if (rotation == 0 || rotation == 180) {
         if (page_width)
-            *page_width = width;
+            *page_width = width + 0.5;
 
         if (page_height)
-            *page_height = height;
+            *page_height = height + 0.5;
     }
     else {
         if (page_width)
-            *page_width = height;
+            *page_width = height + 0.5;
 
         if (page_height)
-            *page_height = width;
+            *page_height = width + 0.5;
     }
 }
 
 static void ctk_doc_view_get_view_page_size (CtkDocView *self,
                                              gint index,
-                                             gdouble *page_width,
-                                             gdouble *page_height)
+                                             gint *page_width,
+                                             gint *page_height)
 {
     CtkDocViewPrivate *priv = self->priv;
 
@@ -408,8 +409,8 @@ static void ctk_doc_view_get_view_page_size (CtkDocView *self,
 
 static void ctk_doc_view_get_doc_page_size (CtkDocView *self,
                                             gint index,
-                                            gdouble *page_width,
-                                            gdouble *page_height)
+                                            gint *page_width,
+                                            gint *page_height)
 {
     CtkDocViewPrivate *priv = self->priv;
 
@@ -428,7 +429,7 @@ static void ctk_doc_view_get_page_extents (CtkDocView *self,
 {
     CtkDocViewPrivate *priv = self->priv;
     GtkWidget *widget = GTK_WIDGET (self);
-    gdouble width, height;
+    gint width, height;
     GtkAllocation allocation;
 
     gtk_widget_get_allocation (widget, &allocation);
@@ -467,9 +468,9 @@ static void ctk_doc_view_get_page_extents (CtkDocView *self,
         gint x, y;
 
         if (priv->dual_page) {
-            gdouble width_2, height_2;
-            gdouble max_width = width;
-            gdouble max_height = height;
+            gint width_2, height_2;
+            gint max_width = width;
+            gint max_height = height;
             GtkBorder overall_border;
             gint other_page;
 
@@ -554,6 +555,46 @@ static gint ctk_doc_view_get_scrollbar_size (CtkDocView *self,
     gtk_widget_get_preferred_size (sb, &req, NULL);
 
     return (orientation == GTK_ORIENTATION_VERTICAL ? req.width : req.height) + spacing;
+}
+
+static void ctk_doc_point_to_view_point (CtkDocView *self,
+                                         gint page,
+                                         gdouble doc_x,
+                                         gdouble doc_y,
+                                         GdkPoint *view_point)
+{
+    CtkDocViewPrivate *priv = self->priv;
+    GdkRectangle page_area;
+    GtkBorder border;
+    gint x, y, view_x, view_y;
+    gint width, height;
+
+    ctk_doc_view_get_doc_page_size (self, page, &width, &height);
+    if (priv->rotation == 0) {
+        x = doc_x;
+        y = doc_y;
+    }
+    else if (priv->rotation == 90) {
+        x = width - doc_y;
+        y = doc_x;
+    }
+    else if (priv->rotation == 180) {
+        x = width - doc_x;
+        y = height - doc_y;
+    } else if (priv->rotation == 270) {
+        x = doc_y;
+        y = height - doc_x;
+    }
+    else {
+        g_assert_not_reached ();
+    }
+
+    ctk_doc_view_get_page_extents (self, page, &page_area, &border);
+
+    view_x = CLAMP (x * priv->scale, 0, page_area.width);
+    view_y = CLAMP (y * priv->scale, 0, page_area.height);
+    view_point->x = view_x + page_area.x;
+    view_point->y = view_y + page_area.y;
 }
 
 static gdouble ctk_doc_view_zoom_for_size_fit_width (gdouble doc_width,
@@ -675,7 +716,7 @@ static void ctk_doc_view_zoom_for_size_dual_page (CtkDocView *self,
 {
     CtkDocViewPrivate *priv = self->priv;
     GtkBorder border;
-    gdouble doc_width, doc_height;
+    gint doc_width, doc_height;
     gdouble scale;
     gint other_page;
 
@@ -684,7 +725,7 @@ static void ctk_doc_view_zoom_for_size_dual_page (CtkDocView *self,
     /* Find the largest of the two. */
     ctk_doc_view_get_doc_page_size (self, priv->cur_page, &doc_width, &doc_height);
     if (other_page < ctk_document_count_pages (priv->document)) {
-        gdouble width_2, height_2;
+        gint width_2, height_2;
 
         ctk_doc_view_get_doc_page_size (self, other_page, &width_2, &height_2);
         if (width_2 > doc_width)
@@ -727,7 +768,7 @@ static void ctk_doc_view_zoom_for_size_single_page (CtkDocView *self,
                                                     gint height)
 {
     CtkDocViewPrivate *priv = self->priv;
-    gdouble doc_width, doc_height;
+    gint doc_width, doc_height;
     GtkBorder border;
     gdouble scale;
 
@@ -790,10 +831,6 @@ static void ctk_doc_view_update_visible_pages (CtkDocView *self)
     gint begin = priv->begin_page;
     gint end = priv->end_page;
     gint page_count;
-
-    priv->begin_page = -1;
-    priv->end_page = -1;
-    priv->cur_page = -1;
 
     page_count = ctk_document_count_pages (priv->document);
 
@@ -895,6 +932,81 @@ static void ctk_doc_view_update_visible_pages (CtkDocView *self)
     }
 }
 
+static void ctk_doc_view_scroll_to_point (CtkDocView *self,
+                                          gdouble x,
+                                          gdouble y,
+                                          GtkOrientation orientation)
+{
+    CtkDocViewPrivate *priv = self->priv;
+    gdouble page_size;
+    gdouble upper, lower;
+
+    if (orientation == GTK_ORIENTATION_VERTICAL) {
+        page_size = gtk_adjustment_get_page_size (priv->vadjustment);
+        upper = gtk_adjustment_get_upper (priv->vadjustment);
+        lower = gtk_adjustment_get_lower (priv->vadjustment);
+
+        y = CLAMP (y, lower, upper - page_size);
+        if (priv->continuous) {
+            gtk_adjustment_clamp_page (priv->vadjustment,
+                                       y,
+                                       y + page_size);
+        }
+        else {
+            gtk_adjustment_set_value (priv->vadjustment, y);
+        }
+     }
+    else {
+        page_size = gtk_adjustment_get_page_size (priv->hadjustment);
+        upper = gtk_adjustment_get_upper (priv->hadjustment);
+        lower = gtk_adjustment_get_lower (priv->hadjustment);
+
+        x = CLAMP (x, lower, upper - page_size);
+        if (priv->dual_page) {
+            gtk_adjustment_clamp_page (priv->hadjustment,
+                                       x,
+                                       x + page_size);
+        }
+        else {
+            gtk_adjustment_set_value (priv->hadjustment, x);
+        }
+    }
+}
+
+static void ctk_doc_view_scroll_to_page_position (CtkDocView *self,
+                                                  GtkOrientation orientation)
+{
+    CtkDocViewPrivate *priv = self->priv;
+    gdouble x, y;
+
+    if (!priv->document)
+        return;
+
+    if ((orientation == GTK_ORIENTATION_VERTICAL && priv->pending_y == 0) ||
+        (orientation == GTK_ORIENTATION_HORIZONTAL && priv->pending_x == 0))
+    {
+        GdkRectangle page_area;
+        GtkBorder border;
+
+        ctk_doc_view_get_page_extents (self, priv->cur_page, &page_area, &border);
+        x = page_area.x;
+        y = page_area.y;
+    }
+    else {
+        GdkPoint view_point;
+
+        ctk_doc_point_to_view_point (self,
+                                     priv->cur_page,
+                                     priv->pending_x,
+                                     priv->pending_y,
+                                     &view_point);
+        x = view_point.x;
+        y = view_point.y;
+    }
+
+    ctk_doc_view_scroll_to_point (self, x, y, orientation);
+}
+
 static void ctk_doc_view_adjustment_value_changed (GtkAdjustment *adjustment,
                                                    CtkDocView *view)
 {
@@ -942,8 +1054,8 @@ static void ctk_doc_view_set_adjustment_values (CtkDocView *self,
     GtkWidget *widget = GTK_WIDGET (self);
     GtkAdjustment *adjustment;
     GtkAllocation allocation;
-    int req_size;
-    int alloc_size;
+    gint req_size;
+    gint alloc_size;
     gdouble page_size;
     gdouble value;
     gdouble upper;
@@ -1005,9 +1117,7 @@ static void ctk_doc_view_set_adjustment_values (CtkDocView *self,
         break;
 
     case SCROLL_TO_PAGE_POSITION:
-        /* TODO
-        ev_view_scroll_to_page_position (view, orientation);
-        */
+        ctk_doc_view_scroll_to_page_position (self, orientation);
         break;
 
     case SCROLL_TO_CENTER:
@@ -1737,7 +1847,7 @@ static void ctk_doc_view_draw_page (CtkDocView *self,
 
     if (gdk_rectangle_intersect (&real_page_area, expose_area, &overlap)) {
         cairo_surface_t *page_surface;
-        gdouble width, height;
+        gint width, height;
         gint page_width, page_height;
 
         page_surface = ctk_doc_render_cache_get_surface (priv->render_cache, page);
@@ -1753,9 +1863,7 @@ static void ctk_doc_view_draw_page (CtkDocView *self,
         cairo_save (cr);
         cairo_translate (cr, overlap.x, overlap.y);
 
-        if ((gint) (width + 0.5) != page_width ||
-            (gint) (height + 0.5) != page_height)
-        {
+        if (width != page_width || height != page_height) {
             cairo_pattern_set_filter (cairo_get_source (cr),
                                       CAIRO_FILTER_FAST);
             cairo_scale (cr,
