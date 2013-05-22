@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?> 
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<PropertyGroup>
+   <IncludePath>$(VCInstallDir)include;$(VCInstallDir)atlmfc\include;$(WindowsSdkDir)include;$(FrameworkSDKDir)\include;$(SolutionDir);..\..\glib-win32\include;..\..\glib-win32\include\glib-2.0;..\..\glib-win32\lib\glib-2.0\include;..\..\glib-win32\include\gtk-3.0;..\..\glib-win32\include\atk-1.0;..\..\glib-win32\include\pango-1.0;..\..\glib-win32\include\cairo;..\..\glib-win32\include\gdk-pixbuf-2.0;..\..\glib-win32\include\libgda-5.0;..\..\glib-win32\include\libgda-5.0\libgda;..\..\glib-win32\include\libxml2;..\..\glib-win32\include\gimo-1.0;..\..\glib-win32\include\oren-1.0;..\src;</IncludePath>
+   <LibraryPath>$(VCInstallDir)lib;$(VCInstallDir)atlmfc\lib;$(WindowsSdkDir)lib;$(FrameworkSDKDir)\lib;$(SolutionDir)$(Configuration);..\..\glib-win32\lib</LibraryPath>
+</PropertyGroup>
+</Project>

@@ -1,0 +1,603 @@
+* {
+	engine: none;
+    border-width: 1px;
+	background-clip: padding-box;
+    background-color: @theme_bg_color;
+    -GtkPaned-handle-size: 5;
+	-GtkCheckButton-indicator-size: 16;
+	-GtkCheckMenuItem-indicator-size: 12;
+    -GtkMenu-horizontal-padding: 0px;
+	-GtkMenu-vertical-padding: 0px;
+    -GtkWidget-link-color: @link_color;
+	-GtkWidget-visited-link-color: @visited_link_color;
+	-GtkIMHtml-hyperlink-color: @link_color;
+	-GtkHTML-link-color: @link_color;
+}
+
+/***************
+ * Base States *
+ ***************/
+GtkWindow {
+    color: @theme_fg_color;
+}
+
+*:selected,
+*:selected:focus {
+	background-color: @theme_selected_bg_color;
+	color: @theme_selected_fg_color;
+}
+
+*:insensitive {
+	background-color: @insensitive_bg_color;
+	color: @insensitive_fg_color;
+	border-color: @insensitive_border_color;
+}
+
+GtkImage,
+GtkImage:insensitive,
+GtkLabel,
+GtkLabel:insensitive {
+	background-color: transparent;
+}
+
+.pane-separator,
+.pane-separator:hover,
+.pane-separator:selected {
+    border-style: solid;
+    border-width: 2px;
+    border-color: @theme_bg_color;
+	color: @theme_bg_color;
+	background-color: @separator_color;
+	background-repeat: no-repeat;
+	background-position: center;
+}
+
+/**************************
+ * Drag Window Background *
+ **************************/
+.view {
+    background-color: @theme_bg_color;
+}
+
+/**************
+ * Separators *
+ **************/
+GtkSeparator {
+    border-style: solid;
+    border-width: 1px;
+	color: @separator_color;
+}
+
+/****************
+ * Text Entries *
+ ****************/
+GtkEntry,
+GtkTextView {
+	border-style: solid;
+    border-radius: 0px;
+    border-color: @entry_border_color;
+    border-image: none;
+	padding: 4px;
+	color: @entry_text_color;
+	background-color: @entry_bg_color;
+    background-image: none;
+}
+
+GtkEntry:insensitive,
+GtkTextView:insensitive {
+	color: @insensitive_fg_color;
+}
+
+GtkEntry:focus,
+GtkTextView:focus {
+    border-color: @entry_border_color_focus;
+    border-width: 2px;
+}
+
+/***********
+ * Buttons *
+ ***********/
+GtkButton {
+	-GtkButton-image-spacing: 0;
+	-GtkButton-interior-focus: true;
+	-GtkButton-default-border: 0;
+	-GtkButton-inner-border: 0;
+    -GtkButton-shadow-type: none;
+	color: @theme_text_color;
+    border-radius: 2px;
+	border-style: solid;
+	border-color: @entry_border_color;
+    background-image: -gtk-gradient (linear,
+	                  left top,
+	                  left bottom,
+	                  from (@button_gradient_a),
+	                  color-stop (0.50, @button_gradient_b),
+	                  color-stop (0.70, @button_gradient_c),
+	                  to (@button_gradient_d));
+	background-color: transparent;
+}
+
+GtkButton:hover {
+	background-image: -gtk-gradient (linear,
+	                  left top,
+	                  left bottom,
+	                  from (@button_hover_gradient_a),
+	                  color-stop (0.50, @button_hover_gradient_b),
+	                  color-stop (0.70, @button_hover_gradient_c),
+	                  to (@button_hover_gradient_d));
+    background-color: transparent;
+}
+
+GtkButton:active {
+	background-image: -gtk-gradient (linear,
+	                  left top,
+	                  left bottom,
+	                  from (@button_active_gradient_a),
+	                  color-stop (0.50, @button_active_gradient_b),
+	                  color-stop (0.70, @button_active_gradient_c),
+	                  to (@button_active_gradient_d));
+	background-color: transparent;
+}
+
+GtkButton:insensitive {
+	background-image: linear-gradient(to bottom,
+	                  @button_insensitive_inner_border_color 1px,
+	                  @button_insensitive_gradient_a 2px,
+	                  @button_insensitive_gradient_b 50%,
+	                  @button_insensitive_gradient_c 50%,
+	                  @button_insensitive_gradient_d);
+	background-color: @insensitive_bg_color;
+}
+
+GtkLinkButton {
+    -GtkWidget-link-color: @link_color;
+	-GtkWidget-visited-link-color: @link_color;
+    border-width: 0px;
+    border-image: none;
+    background-image: none;
+    background-color: transparent;
+}
+
+GtkLinkButton:hover,
+GtkLinkButton:active,
+GtkLinkButton:focus {
+    -GtkWidget-link-color: @link_color_hover;
+	-GtkWidget-visited-link-color: @link_color_hover;
+    color: @link_color_hover;
+    border-image: none;
+    background-image: none;
+    background-color: transparent;
+}
+
+/****************
+ * Radiobuttons *
+ ****************/
+.check,
+.radio,
+.check:insensitive,
+.radio:insensitive {
+	background-color: transparent;
+	border-style: none;
+}
+
+.check row:selected:insensitive,
+.check row:selected:focus:insensitive {
+	background-color: transparent;
+}
+
+GtkCheckButton:hover,
+GtkCheckButton:active:hover,
+GtkCheckButton:selected,
+GtkCheckButton:selected:focus {
+    background-image: none;
+	background-color: transparent;
+}
+
+/**************
+ * ComboBoxes *
+ **************/
+
+GtkComboBox {
+	padding: 0;
+    -GtkComboBox-appears-as-list: false;
+	-GtkComboBox-arrow-scaling: 0.5;
+	-GtkComboBox-shadow-type: none;
+}
+
+GtkComboBox .entry {
+	border-right-width: 0px;
+}
+
+GtkComboBox .entry:focus {
+	border-right-width: 0px;
+}
+
+GtkComboBox.combobox-entry .button {
+    padding: 0px;
+    padding-right: 1px;
+    border-left-width: 0px;
+    border-radius: 0px;
+    border-style: solid;
+    border-color: @border_color;
+    background-image: none;
+    -GtkWidget-focus-line-width: 0px;
+}
+
+GtkComboBox .button:focus {
+    padding: 0px;
+    border-width: 2px;
+    border-left-width: 0px;
+    border-style: solid;
+    border-color: @focus_border_color;
+    background-image: none;
+}
+
+/************
+ * Toolbars *
+ ************/
+
+.toolbar {
+	border-style: none;
+    border-width: 0px;
+	background-image: none;
+}
+
+/*********
+ * Menus *
+ *********/
+
+.menu {
+	background-color: @menu_bg_color;
+	color: @menu_fg_color;
+	padding: 1px;
+	border-style: solid;
+	border-width: 1px;
+	border-color: @menu_border_color;
+}
+
+.menuitem {
+    -GtkMenuItem-arrow-scaling: 0.5;
+    padding: 4px;
+}
+
+.menuitem:hover {
+    border-style: solid;
+    border-width: 1px;
+    border-color: @menu_bg_color;
+    background-image: none;
+    background-color: @theme_selected_bg_color;
+}
+
+.menuitem*:hover {
+    color: @theme_selected_fg_color;
+}
+
+.menuitem:insensitive {
+    color: @insensitive_fg_color;
+    background-image: none;
+    background-color: @menu_bg_color;
+}
+
+.menuitem.arrow {
+    color: @menu_controls_color;
+}
+
+.menuitem.separator,
+.menuitem.separator:insensitive {
+    border-style: solid;
+    border-width: 1px;
+    color: @menu_separator_color;
+    -GtkMenuItem-horizontal-padding: 0;
+}
+
+.menuitem.check,
+.menuitem.radio,
+.menuitem.check:hover,
+.menuitem.radio:hover,
+.menuitem.check:insensitive,
+.menuitem.radio:insensitive {
+    background-image: none;
+    background-color: transparent;
+}
+
+.menuitem.check:active,
+.menuitem.radio:active {
+    background-color: transparent;
+}
+
+/************
+ * TreeViews
+ ************/
+GtkTreeView.view {
+    color: @menu_fg_color;
+    background-color: @menu_bg_color;
+    background-image: none;
+    -GtkWidget-focus-line-width: 0;
+}
+
+GtkTreeView.view:hover {
+    color: @theme_selected_fg_color;
+    background-color: @theme_selected_bg_color;
+}
+
+/*****************
+ * ScrolledWindows
+ *****************/
+GtkScrolledWindow.frame {
+    padding: 1px;
+    border-image: none;
+    border-color: @menu_border_color;
+}
+
+/************
+ * Lobby *
+ ************/
+.face-image {
+    border-radius: 2px;
+    border-style: solid;
+    border-width: 1px;
+    border-color: @border_color;
+}
+
+.roomtab-left {
+    border-radius: 0px;
+    border-style: solid;
+    border-width: 0px 1px 1px 0px;
+    border-color: @separator_color;
+    background-image: none;
+    background-color: @navigator_tab_normal;
+}
+
+.roomtab-left:hover,
+.roomtab-left:active,
+.roomtab-left:active:hover {
+    border-radius: 0px;
+    border-style: solid;
+    border-width: 0px 1px 1px 0px;
+    border-color: @separator_color;
+    background-image: none;
+    background-color: @navigator_tab_active;
+}
+
+.roomtab-middle {
+    border-radius: 0px;
+    border-style: solid;
+    border-width: 0px 1px 1px 0px;
+    border-color: @separator_color;
+    background-image: none;
+    background-color: @navigator_tab_normal;
+}
+
+.roomtab-middle:hover,
+.roomtab-middle:active,
+.roomtab-middle:active:hover {
+    border-radius: 0px;
+    border-style: solid;
+    border-width: 0px 1px 1px 0px;
+    border-color: @separator_color;
+    background-image: none;
+    background-color: @navigator_tab_active;
+}
+
+.roomtab-right {
+    border-radius: 0px;
+    border-style: solid;
+    border-width: 0px 0px 1px 0px;
+    border-color: @separator_color;
+    background-image: none;
+    background-color: @navigator_tab_normal;
+}
+
+.roomtab-right:hover,
+.roomtab-right:active,
+.roomtab-right:active:hover {
+    border-radius: 0px;
+    border-style: solid;
+    border-width: 0px 0px 1px 0px;
+    border-color: @separator_color;
+    background-image: none;
+    background-color: @navigator_tab_active;
+}
+
+.navigate-bar GtkRadioButton,
+.navigate-bar GtkRadioButton:active {
+    border-radius: 0px;
+    border-style: solid;
+    border-width: 0px 1px 0px 1px;
+    border-color: @separator_color;
+    background-image: none;
+    background-color: @navigator_tab_active;
+}
+
+.sidebar-bg {
+    border-right-width: 1px;
+    border-style: solid;
+    border-color: @separator_color;
+    background-color: @statusbar_bg_color;
+}
+
+.statusbar-bg {
+    border-width: 1px;
+    border-style: solid;
+    border-color: @border_color;
+    background-image: none;
+    background-color: @statusbar_bg_color;
+}
+
+.room-entry,
+.noborder-button,
+.noborder-button:active {
+    border-radius: 0px;
+    border-style: solid;
+    border-width: 0px;
+    background-image: none;
+    background-color: @theme_base_color;
+}
+
+.noborder-button:hover,
+.noborder-button:active:hover {
+    border-radius: 0px;
+    border-style: solid;
+    border-width: 0px;
+    background-image: none;
+    background-color: @navigator_tab_active;
+}
+
+.noborder-widget {
+    border-radius: 0px;
+    border-style: solid;
+    border-width: 0px;
+}
+
+.statusbar-button,
+.statusbar-button:active {
+    border-radius: 0px;
+    border-style: solid;
+    border-width: 0px;
+    background-image: none;
+    background-color: @statusbar_bg_color;
+}
+
+.statusbar-button:hover,
+.statusbar-button:active:hover {
+    background-image: -gtk-gradient (linear,
+                      left top,
+                      left bottom,
+                      from (@button_hover_gradient_a),
+                      color-stop (0.50, @button_hover_gradient_b),
+                      color-stop (0.70, @button_hover_gradient_c),
+                      to (@button_hover_gradient_d));
+    background-color: @statusbar_bg_color;
+}
+
+.config-side {
+    background-image: none;
+    background-color: rgb(233,233,233);
+}
+
+.config-side:hover {
+    background-image: none;
+    background-color: rgb(233,0,0);
+}
+
+.config-button {
+    border-radius: 0px;
+    border-style: solid;
+    border-width: 0px 0px 0px 10px;
+    border-color: transparent;
+    background-image: none;
+    background-color: transparent;
+    -GtkWidget-focus-line-width: 0;
+}
+
+.config-button:hover{
+    border-radius: 0px;
+    border-style: solid;
+    border-width: 0px 0px 0px 10px;
+    border-color: rgb(169, 206, 227);
+    background-image: none;
+    background-color: rgb(169, 206, 227);
+}
+
+.config-button:active {
+    border-radius: 0px;
+    border-style: solid;
+    border-width: 0px 0px 0px 10px;
+    border-color: @border_color;
+    background-image: none;
+    background-color: rgb(169, 206, 227);
+}
+
+.config-button:active:hover {
+    border-radius: 0px;
+    border-style: solid;
+    border-width: 0px 0px 0px 10px;
+    border-color: @border_color;
+    background-image: none;
+    background-color: rgb(169, 206, 227);
+}
+
+.config-entry {
+    border-radius: 0px;
+    border-style: solid;
+    border-width: 0px;
+    border-color: transparent;
+    border-image: none;
+    color: @entry_text_color;
+    background-color: @theme_bg_color;
+    background-image: none;
+}
+
+.config-entry:hover,
+.config-entry:focus {
+    border-color: @entry_border_color_focus;
+    border-width: 1px;
+}
+
+.config-combobox GtkFrame {
+    padding: 0;
+    border-radius: 0px;
+    border-image: none;
+    border-width: 1px 0px 1px 1px;
+    border-color: @border_color;
+}
+
+.config-combobox .button {
+    padding: 0;
+    border-radius: 0px;
+    border-width: 1px 1px 1px 0px;
+    border-color: @border_color;
+    background-color: @theme_bg_color;
+    background-image: none;
+}
+
+.config-combobox .button:hover,
+.config-combobox .button:focus {
+    padding: 0;
+    border-radius: 0px;
+    border-width: 1px 1px 1px 0px;
+    border-color: @entry_border_color_focus;
+    background-color: @theme_bg_color;
+    background-image: none;
+}
+
+.config-textview-bg {
+    background-image: none;
+    background-color: @border_color;
+}
+
+.config-textview {
+    padding: 3px;
+    border-style: solid;
+    border-width: 1px;
+    background-image: none;
+    background-color: @theme_bg_color;
+    border-color: rgb(0,0,0);
+}
+
+.config-textview:hover {
+    padding: 3px;
+    background-image: none;
+    background-color: rgb(0,0,0);
+}
+
+.config-iconview.cell {
+    border-radius: 4px;
+    border-style: solid;
+    border-width: 0px;
+    border-color: transparent;
+}
+
+.config-iconview.cell:hover {
+    border-radius: 4px;
+    border-style: solid;
+    border-width: 0px;
+    border-color: @border_color;
+}
+
+.bulletin-background  {
+    margin: 4px;
+    border-width: 1px;
+    border-style: solid;
+    border-color: @separator_color;
+}

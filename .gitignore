@@ -24,7 +24,8 @@ svn-ignore
 win32/ipch/*
 win32/Debug/*
 win32/Release/*
-win32/booknote.opensdf
+win32/gather.opensdf
+win32/plugins/main
 Makefile
 /*~
 /aclocal.m4
