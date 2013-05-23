@@ -29,6 +29,17 @@ static void _txt_page_get_size (CtkDocPage *self,
 {
 }
 
+static gint _txt_page_text_length (CtkDocPage *page)
+{
+    return 0;
+}
+
+static void _txt_page_extract_text (CtkDocPage *page,
+                                    gchar *texts,
+                                    cairo_rectangle_int_t *rects)
+{
+}
+
 static void _txt_page_render (CtkDocPage *self,
                               cairo_surface_t *surface,
                               const cairo_matrix_t *ctm,
@@ -66,6 +77,8 @@ static void txt_page_class_init (TxtPageClass *klass)
     gobject_class->finalize = txt_page_finalize;
 
     page_class->get_size = _txt_page_get_size;
+    page_class->text_length = _txt_page_text_length;
+    page_class->extract_text = _txt_page_extract_text;
     page_class->render = _txt_page_render;
 
     g_type_class_add_private (gobject_class,

@@ -24,7 +24,10 @@ G_DEFINE_TYPE (PdfPage, pdf_page, CTK_TYPE_DOC_PAGE)
 struct _PdfPagePrivate {
     pdf_document *doc;
     pdf_page *page;
-    fz_display_list *page_list;
+    fz_display_list *list;
+    fz_text_page *text;
+    fz_text_sheet *sheet;
+    fz_rect bbox;
 };
 
 static void _pdf_page_lock_ctx (PdfPage *self)
@@ -39,28 +42,28 @@ static void _pdf_page_unlock_ctx (PdfPage *self)
     pdf_document_unlock (PDF_DOCUMENT (doc));
 }
 
-static fz_display_list* _pdf_page_get_page_list (PdfPage *self)
+static fz_display_list* _pdf_page_get_list (PdfPage *self)
 {
     PdfPagePrivate *priv = self->priv;
 
-    if (priv->page_list)
-        return priv->page_list;
+    if (priv->list)
+        return priv->list;
 
     _pdf_page_lock_ctx (self);
 
-    if (NULL == priv->page_list) {
+    if (NULL == priv->list) {
         fz_device *mdev;
         fz_cookie cookie = { 0 };
 
-        priv->page_list = fz_new_display_list (priv->doc->ctx);
-        mdev = fz_new_list_device (priv->doc->ctx, priv->page_list);
+        priv->list = fz_new_display_list (priv->doc->ctx);
+        mdev = fz_new_list_device (priv->doc->ctx, priv->list);
         pdf_run_page_contents (priv->doc, priv->page, mdev, &fz_identity, &cookie);
         fz_free_device (mdev);
     }
 
     _pdf_page_unlock_ctx (self);
 
-    return priv->page_list;
+    return priv->list;
 }
 
 static void _pdf_page_get_size (CtkDocPage *page,
@@ -69,16 +72,23 @@ static void _pdf_page_get_size (CtkDocPage *page,
 {
     PdfPage *self = PDF_PAGE (page);
     PdfPagePrivate *priv = self->priv;
-    fz_rect bbox = fz_empty_rect;
-
-    if (priv->page)
-        pdf_bound_page (priv->doc, priv->page, &bbox);
 
     if (width)
-        *width = bbox.x1;
+        *width = priv->bbox.x1;
 
     if (height)
-        *height = bbox.y1;
+        *height = priv->bbox.y1;
+}
+
+static gint _pdf_page_text_length (CtkDocPage *page)
+{
+    return 0;
+}
+
+static void _pdf_page_extract_text (CtkDocPage *page,
+                                    gchar *texts,
+                                    cairo_rectangle_int_t *rects)
+{
 }
 
 static void _pdf_page_render (CtkDocPage *page,
@@ -126,7 +136,7 @@ static void _pdf_page_render (CtkDocPage *page,
     ctm.e = _ctm->x0;
     ctm.f = _ctm->y0;
 
-    pdf_bound_page (priv->doc, priv->page, &bounds);
+    bounds = priv->bbox;
     fz_round_rect (&ibounds, fz_transform_rect (&bounds, &ctm));
 
     ibounds.x1 = ibounds.x0 + cairo_image_surface_get_width (surface);
@@ -138,7 +148,7 @@ static void _pdf_page_render (CtkDocPage *page,
         cairo_image_surface_get_data (surface));
 
     idev = fz_new_draw_device (ctx, pixmap);
-    list = _pdf_page_get_page_list (self);
+    list = _pdf_page_get_list (self);
 
     fz_run_display_list (list, idev, &ctm, &bounds, &cookie);
 
@@ -154,9 +164,19 @@ static void _pdf_page_close (CtkDocPage *page)
     PdfPage *self = PDF_PAGE (page);
     PdfPagePrivate *priv = self->priv;
 
-    if (priv->page_list) {
-        fz_free_display_list (priv->doc->ctx, priv->page_list);
-        priv->page_list = NULL;
+    if (priv->text) {
+        fz_free_text_page (priv->doc->ctx, priv->text);
+        priv->text = NULL;
+    }
+
+    if (priv->sheet) {
+        fz_free_text_sheet (priv->doc->ctx, priv->sheet);
+        priv->sheet = NULL;
+    }
+
+    if (priv->list) {
+        fz_free_display_list (priv->doc->ctx, priv->list);
+        priv->list = NULL;
     }
 
     if (priv->page) {
@@ -179,7 +199,9 @@ static void pdf_page_init (PdfPage *self)
 
     priv->doc = NULL;
     priv->page = NULL;
-    priv->page_list = NULL;
+    priv->list = NULL;
+    priv->text = NULL;
+    priv->sheet = NULL;
 }
 
 static void pdf_page_constructed (GObject *gobject)
@@ -194,8 +216,7 @@ static void pdf_page_constructed (GObject *gobject)
 
     g_object_get (doc, "pdf-document", &priv->doc, NULL);
     priv->page = pdf_load_page (priv->doc, index);
-
-    g_assert (priv->page);
+    pdf_bound_page (priv->doc, priv->page, &priv->bbox);
 }
 
 static void pdf_page_finalize (GObject *gobject)
@@ -217,6 +238,8 @@ static void pdf_page_class_init (PdfPageClass *klass)
     gobject_class->finalize = pdf_page_finalize;
 
     page_class->get_size = _pdf_page_get_size;
+    page_class->text_length = _pdf_page_text_length;
+    page_class->extract_text = _pdf_page_extract_text;
     page_class->render = _pdf_page_render;
     page_class->close = _pdf_page_close;
 

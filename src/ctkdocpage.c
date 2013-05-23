@@ -29,6 +29,9 @@ enum {
 struct _CtkDocPagePrivate {
     CtkDocument *document;
     gint index;
+    gint text_length;
+    gdouble width;
+    gdouble height;
 };
 
 static void _doc_page_get_matrix (CtkDocPage *self,
@@ -38,6 +41,11 @@ static void _doc_page_get_matrix (CtkDocPage *self,
 {
     cairo_matrix_init_scale (ctm, scale, scale);
     cairo_matrix_rotate (ctm, rotation * G_PI / 180.0);
+}
+
+static gint _doc_page_text_length (CtkDocPage *self)
+{
+    return 0;
 }
 
 static void _doc_page_close (CtkDocPage *self)
@@ -55,7 +63,10 @@ static void ctk_doc_page_init (CtkDocPage *self)
     priv = self->priv;
 
     priv->document = NULL;
-    priv->index = 0;
+    priv->index = -1;
+    priv->text_length = -1;
+    priv->width = -1;
+    priv->height = -1;
 }
 
 static void ctk_doc_page_set_property (GObject *object,
@@ -124,6 +135,8 @@ static void ctk_doc_page_class_init (CtkDocPageClass *klass)
 
     klass->get_size = NULL;
     klass->get_matrix = _doc_page_get_matrix;
+    klass->text_length = _doc_page_text_length;
+    klass->extract_text = NULL;
     klass->render = NULL;
     klass->close = _doc_page_close;
 
@@ -167,7 +180,23 @@ void ctk_doc_page_get_size (CtkDocPage *self,
                             gdouble *width,
                             gdouble *height)
 {
-    CTK_DOC_PAGE_GET_CLASS (self)->get_size (self, width, height);
+    CtkDocPagePrivate *priv;
+
+    g_return_if_fail (CTK_IS_DOC_PAGE (self));
+
+    priv = self->priv;
+
+    if (priv->width < 0 && priv->height < 0) {
+        CTK_DOC_PAGE_GET_CLASS (self)->get_size (self,
+                                                 &priv->width,
+                                                 &priv->height);
+    }
+
+    if (width)
+        *width = priv->width;
+
+    if (height)
+        *height = priv->height;
 }
 
 void ctk_doc_page_get_matrix (CtkDocPage *self,
@@ -176,6 +205,28 @@ void ctk_doc_page_get_matrix (CtkDocPage *self,
                               cairo_matrix_t *ctm)
 {
     CTK_DOC_PAGE_GET_CLASS (self)->get_matrix (self, scale, rotation, ctm);
+}
+
+gint ctk_doc_page_text_length (CtkDocPage *self)
+{
+    CtkDocPagePrivate *priv;
+
+    g_return_val_if_fail (CTK_IS_DOC_PAGE (self), 0);
+
+    priv = self->priv;
+
+    if (priv->text_length != -1)
+        return priv->text_length;
+
+    priv->text_length = CTK_DOC_PAGE_GET_CLASS (self)->text_length (self);
+    return priv->text_length;
+}
+
+void ctk_doc_page_extract_text (CtkDocPage *self,
+                                gchar *texts,
+                                cairo_rectangle_int_t *rects)
+{
+    CTK_DOC_PAGE_GET_CLASS (self)->extract_text (self, texts, rects);
 }
 
 void ctk_doc_page_render (CtkDocPage *self,

@@ -52,6 +52,10 @@ struct _CtkDocPageClass {
                         gdouble scale,
                         gint rotation,
                         cairo_matrix_t *ctm);
+    gint (*text_length) (CtkDocPage *self);
+    void (*extract_text) (CtkDocPage *self,
+                          gchar *texts,
+                          cairo_rectangle_int_t *rects);
     void (*render) (CtkDocPage *self,
                     cairo_surface_t *surface,
                     const cairo_matrix_t *ctm,
@@ -69,6 +73,12 @@ void ctk_doc_page_get_matrix (CtkDocPage *self,
                               gdouble scale,
                               gint rotation,
                               cairo_matrix_t *ctm);
+
+gint ctk_doc_page_text_length (CtkDocPage *self);
+
+void ctk_doc_page_extract_text (CtkDocPage *self,
+                                gchar *texts,
+                                cairo_rectangle_int_t *rects);
 
 void ctk_doc_page_render (CtkDocPage *self,
                           cairo_surface_t *surface,
