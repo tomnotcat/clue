@@ -58,7 +58,7 @@ CtkDocModel* ctk_doc_model_new_with_document (CtkDocument *document);
 void ctk_doc_model_set_document (CtkDocModel *self,
                                  CtkDocument *document);
 
-CtkDocument *ctk_doc_model_get_document (CtkDocModel *self);
+CtkDocument* ctk_doc_model_get_document (CtkDocModel *self);
 
 void ctk_doc_model_set_page (CtkDocModel *self,
                              gint page);

@@ -1,0 +1,105 @@
+EXPORTS
+	ctk_base_decorator_get_type
+    ctk_base_decorator_new
+    ctk_base_decorator_attach
+    ctk_base_decorator_detach
+    ctk_base_decorator_get_window
+    ctk_base_decorator_set_close_mode
+    ctk_is_win7
+    _ctk_base_decorator_get_hwnd
+    _ctk_base_decorator_call_old_proc
+
+    ctk_open_single_file
+    
+    ctk_decorator_button_get_type
+    ctk_decorator_button_new
+    
+    ctk_decorator_widget_get_type
+    ctk_decorator_widget_new
+    ctk_decorator_widget_get_style_context
+    ctk_decorator_widget_get_allocation
+    
+    ctk_doc_model_get_type
+    ctk_doc_model_new
+    ctk_doc_model_new_with_document
+    ctk_doc_model_set_document
+    ctk_doc_model_get_document
+    ctk_doc_model_set_page
+    ctk_doc_model_get_page
+    ctk_doc_model_set_scale
+    ctk_doc_model_get_scale
+    ctk_doc_model_set_max_scale
+    ctk_doc_model_get_max_scale
+    ctk_doc_model_set_min_scale
+    ctk_doc_model_get_min_scale
+    ctk_doc_model_set_sizing_mode
+    ctk_doc_model_get_sizing_mode
+    ctk_doc_model_set_rotation
+    ctk_doc_model_get_rotation
+    ctk_doc_model_set_continuous
+    ctk_doc_model_get_continuous
+    ctk_doc_model_set_dual_page
+    ctk_doc_model_get_dual_page
+    ctk_doc_model_set_dual_page_odd_pages_left
+    ctk_doc_model_get_dual_page_odd_pages_left
+    
+    ctk_doc_page_get_type
+    ctk_doc_page_get_size
+    ctk_doc_page_get_matrix
+    ctk_doc_page_text_length
+    ctk_doc_page_extract_text
+    ctk_doc_page_render
+    ctk_doc_page_get_document
+    ctk_doc_page_get_index
+    
+    ctk_doc_render_cache_get_type
+    ctk_doc_render_cache_new
+    ctk_doc_render_cache_set_max_size
+    ctk_doc_render_cache_set_page_range
+    ctk_doc_render_cache_get_surface
+    ctk_doc_render_cache_clear
+    
+    ctk_doc_render_task_get_type
+    ctk_doc_render_task_new
+    ctk_doc_render_task_get_page
+    ctk_doc_render_task_get_surface
+    
+    ctk_document_get_type
+    ctk_document_error_quark
+    ctk_document_load
+    ctk_document_close
+    ctk_document_count_pages
+    ctk_document_get_page
+    ctk_document_get_uniform_page_size
+    ctk_document_get_max_page_size
+    ctk_document_get_min_page_size
+    ctk_document_load_from_file
+    ctk_load_document_from_file
+    
+    ctk_doc_view_get_type
+    ctk_doc_view_new
+    ctk_doc_view_set_model
+    ctk_doc_view_get_model
+    ctk_doc_view_set_render_cache_size
+    ctk_doc_view_can_zoom_in
+    ctk_doc_view_can_zoom_out
+    ctk_doc_view_zoom_in
+    ctk_doc_view_zoom_out
+    ctk_doc_view_next_page
+    ctk_doc_view_previous_page
+    
+    ctk_close_mode_get_type
+    ctk_sizing_mode_get_type
+    
+    ctk_file_get_mime_type
+    
+    ctk_marshal_VOID__INT_INT
+    
+    ctk_mouse_manager_track_leave
+    ctk_mouse_manager_add_track
+    ctk_mouse_manager_remove_track
+    
+    ctk_window_decorator_get_type
+    ctk_window_decorator_new
+    ctk_window_decorator_add_tool
+    ctk_window_decorator_get_allocation

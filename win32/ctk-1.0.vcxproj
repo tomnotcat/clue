@@ -1,0 +1,166 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="ctk.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\src\ctkbasedecorator.h" />
+    <ClInclude Include="..\src\ctkcommondialog.h" />
+    <ClInclude Include="..\src\ctkdecoratorbutton.h" />
+    <ClInclude Include="..\src\ctkdecoratorwidget.h" />
+    <ClInclude Include="..\src\ctkdecoratorwidgetprivate.h" />
+    <ClInclude Include="..\src\ctkdocmodel.h" />
+    <ClInclude Include="..\src\ctkdocpage.h" />
+    <ClInclude Include="..\src\ctkdocrendercache.h" />
+    <ClInclude Include="..\src\ctkdocrendertask.h" />
+    <ClInclude Include="..\src\ctkdocument.h" />
+    <ClInclude Include="..\src\ctkdocview.h" />
+    <ClInclude Include="..\src\ctkenums.h" />
+    <ClInclude Include="..\src\ctkfileutils.h" />
+    <ClInclude Include="..\src\ctkmarshal.h" />
+    <ClInclude Include="..\src\ctkmousemanager.h" />
+    <ClInclude Include="..\src\ctktypes.h" />
+    <ClInclude Include="..\src\ctkwindowdecorator.h" />
+    <ClInclude Include="config.h" />
+    <ClInclude Include="resource.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ctk.def" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\src\ctkbasedecorator-win32.c" />
+    <ClCompile Include="..\src\ctkcommondialog-win32.c" />
+    <ClCompile Include="..\src\ctkdecoratorbutton.c" />
+    <ClCompile Include="..\src\ctkdecoratorwidget.c" />
+    <ClCompile Include="..\src\ctkdocmodel.c" />
+    <ClCompile Include="..\src\ctkdocpage.c" />
+    <ClCompile Include="..\src\ctkdocrendercache.c" />
+    <ClCompile Include="..\src\ctkdocrendertask.c" />
+    <ClCompile Include="..\src\ctkdocument.c" />
+    <ClCompile Include="..\src\ctkdocview.c" />
+    <ClCompile Include="..\src\ctkenums.c" />
+    <ClCompile Include="..\src\ctkfileutils.c" />
+    <ClCompile Include="..\src\ctkmarshal.c" />
+    <ClCompile Include="..\src\ctkmousemanager.c" />
+    <ClCompile Include="..\src\ctkwindowdecorator-win32.c" />
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{589818B6-F811-4848-BD81-DF0465462476}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>uucore</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+    <IncludePath>
+    </IncludePath>
+    <LibraryPath>
+    </LibraryPath>
+    <TargetName>$(ProjectName)</TargetName>
+    <PostBuildEventUseInBuild>true</PostBuildEventUseInBuild>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+    <TargetName>$(ProjectName)</TargetName>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;CTK_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\..\glib-win32\include\glib-2.0;..\..\glib-win32\lib\glib-2.0\include;..\..\glib-win32\include;..\..\glib-win32\include\gimo-1.0;..\..\glib-win32\include\oren-1.0;..\..\glib-win32\include\gtk-3.0;..\..\glib-win32\include\atk-1.0;..\..\glib-win32\include\pango-1.0;..\..\glib-win32\include\cairo;..\..\glib-win32\include\gdk-pixbuf-2.0;..\..\glib-win32\include\libxml2;..\..\glib-win32\include\libgda-5.0;..\..\glib-win32\include\libgda-5.0\libgda</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>glib-2.0.lib;gobject-2.0.lib;gio-2.0.lib;gdk-3.0.lib;gtk-3.0.lib;gdk_pixbuf-2.0.lib;cairo.lib;cairo-gobject.lib;gimo.lib;oren.lib;libeay32.lib;libgda.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>..\..\glib-win32\lib</AdditionalLibraryDirectories>
+      <ModuleDefinitionFile>ctk.def</ModuleDefinitionFile>
+      <ImportLibrary>
+      </ImportLibrary>
+      <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
+      <ProgramDatabaseFile>$(TargetDir)$(TargetName).pdb</ProgramDatabaseFile>
+    </Link>
+    <PostBuildEvent>
+      <Command>
+      </Command>
+    </PostBuildEvent>
+    <PreLinkEvent>
+      <Command>
+      </Command>
+    </PreLinkEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;CTK_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\..\glib-win32\include\glib-2.0;..\..\glib-win32\lib\glib-2.0\include;..\..\glib-win32\include;..\..\glib-win32\include\gimo-1.0;..\..\glib-win32\include\oren-1.0;..\..\glib-win32\include\gtk-3.0;..\..\glib-win32\include\atk-1.0;..\..\glib-win32\include\pango-1.0;..\..\glib-win32\include\cairo;..\..\glib-win32\include\gdk-pixbuf-2.0;..\..\glib-win32\include\libxml2;..\..\glib-win32\include\libgda-5.0;..\..\glib-win32\include\libgda-5.0\libgda</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <ModuleDefinitionFile>ctk.def</ModuleDefinitionFile>
+      <AdditionalDependencies>glib-2.0.lib;gobject-2.0.lib;gio-2.0.lib;gdk-3.0.lib;gtk-3.0.lib;gdk_pixbuf-2.0.lib;cairo.lib;cairo-gobject.lib;gimo.lib;oren.lib;libeay32.lib;libgda.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <ImportLibrary>
+      </ImportLibrary>
+      <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
+      <ProgramDatabaseFile>$(TargetDir)$(TargetName).pdb</ProgramDatabaseFile>
+      <AdditionalLibraryDirectories>..\..\glib-win32\lib</AdditionalLibraryDirectories>
+    </Link>
+    <PostBuildEvent>
+      <Command>copy ".\Release\$(TargetName)$(TargetExt)"  "..\..\glib-win32\bin\$(TargetName)$(TargetExt)"
+copy ".\Release\$(ProjectName).lib"  "..\..\glib-win32\lib\$(ProjectName).lib"
+copy "..\src\backend\txt\clue-txt-1.0.xml"  "..\..\glib-win32\lib\gather-backend-1.0\clue-txt-1.0.xml"
+copy "..\src\backend\pdf\clue-pdf-1.0.xml"  "..\..\glib-win32\lib\gather-backend-1.0\clue-pdf-1.0.xml"
+del ".\Release\Ctk-1.0.gir"
+del ".\Release\Ctk-1.0.typelib"
+call python.exe generate-gi.py Release ctk-1.0
+copy ".\Release\Ctk-1.0.gir"  "..\..\glib-win32\share\gir-1.0\Ctk-1.0.gir"
+copy ".\Release\Ctk-1.0.typelib"  "..\..\glib-win32\lib\girepository-1.0\Ctk-1.0.typelib"</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <Import Project="$(SolutionDir)gather.cpp.props" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

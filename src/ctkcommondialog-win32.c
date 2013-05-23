@@ -131,8 +131,11 @@ static OPENFILENAME* _create_ofn (GtkWidget *parent,
         _dialog_parent = GDK_WINDOW_HWND (window);
     }
 
-    tInitDir = g_locale_from_utf8 (lpszInitDir, -1, NULL, NULL, NULL);
-    tTitle = g_locale_from_utf8 (lpszTitle, -1, NULL, NULL, NULL);
+    if (lpszInitDir)
+        tInitDir = g_locale_from_utf8 (lpszInitDir, -1, NULL, NULL, NULL);
+
+    if (lpszTitle)
+        tTitle = g_locale_from_utf8 (lpszTitle, -1, NULL, NULL, NULL);
 
     ofn->lStructSize = sizeof (OPENFILENAME);
     ofn->hwndOwner = _dialog_parent;

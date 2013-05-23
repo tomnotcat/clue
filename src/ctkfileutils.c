@@ -17,6 +17,7 @@
  */
 #include "ctkfileutils.h"
 #include <gio/gio.h>
+#include <string.h>
 
 static gchar* get_mime_type_from_uri (const gchar *uri, GError **error)
 {

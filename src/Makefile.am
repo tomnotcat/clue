@@ -64,4 +64,6 @@ CLEANFILES += $(gir_DATA) $(typelib_DATA)
 endif # HAVE_INTROSPECTION
 
 SUBDIRS = . backend
-EXTRA_DIST = ctkbasedecorator-win32.c ctkwindowdecorator-win32.c
+EXTRA_DIST = ctkmousemanager.h ctkmousemanager.c ctkbasedecorator-win32.c \
+	ctkwindowdecorator-win32.c ctkdecoratorbutton.h ctkdecoratorbutton.c \
+	ctkdecoratorwidget.h ctkdecoratorwidgetprivate.h ctkdecoratorwidget.c

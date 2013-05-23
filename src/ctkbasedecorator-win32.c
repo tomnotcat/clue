@@ -15,8 +15,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include "uubasedecorator.h"
-#include "uumousemanager.h"
+#include "ctkbasedecorator.h"
+#include "ctkmousemanager.h"
 
 #define MOUSE_TRACK_MASK (CTK_MOUSE_TRACK_LBUTTONDOWN | \
                           CTK_MOUSE_TRACK_RBUTTONDOWN | \
@@ -31,7 +31,7 @@ struct _CtkBaseDecoratorPrivate {
     GtkWidget *window;
     WNDPROC old_proc;
     HWND hwnd;
-    UUCloseMode close_mode;
+    CtkCloseMode close_mode;
     guint close_time;
 };
 
